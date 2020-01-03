@@ -1,5 +1,7 @@
 # fix voice crossing
 # backtracking
+# add flat keys
+# fix ranges
 
 majorKeys = {
     "C": "CDEFGAB",
@@ -55,17 +57,20 @@ supranoRange = [26, len(allNotes) - 2]
 class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
         self.key = key
-        self.chordProgression = chordProgression.split(" ") #convert from "I I I" to ["I", "I", "I"]
+        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
 
     def isParallel5thOctave(self, line1, line2, startingPos, newNoteIndex, lower):
         if startingPos < 0:
             return False
+
         # check for stagnant motion
         if line1[startingPos][0:1] == line1[startingPos+1][0:1]:
             return False
+
         # check for octaves
         if line2[startingPos][0:1] == line1[startingPos][0:1] and allNotes[newNoteIndex] == line1[startingPos+1][0:1]:
             return True
+
         # check for 5th
         if lower: # if list 1 is below list 2 i.e. if we should look up a 4th or down a 4th from list 1
             if allNotes[allNotes.index(line1[startingPos][0:1]) + 8] == line2[startingPos][0:1] and allNotes[allNotes.index(line1[startingPos+1][0:1]) + 8] == allNotes[newNoteIndex]:
@@ -77,6 +82,7 @@ class PartWriter:
     def isVoiceCrossing(self, line1, startingPos, newNoteIndex, lower):
         if startingPos < 0:
             return False
+
         comparisonNote = allNotes.index(line1[startingPos][0:1])
         if lower: # if line 1 is supposed to be lower than line 2
             if newNoteIndex > comparisonNote:
@@ -84,6 +90,7 @@ class PartWriter:
         else:
             if newNoteIndex < comparisonNote:
                 return True
+
         return False
 
     def generateKeystring(self):
@@ -128,12 +135,14 @@ class PartWriter:
                     self.bassline.append(allNotes[j:j+2])
                     lastNoteIndex = j
                     break
+
+                # keeping pointers within range
                 if i > bassRange[0]:
                     i -= 2
                 if j < bassRange[1]:
                     j += 2
                 if i <= bassRange[0] and j >= bassRange[1]:
-                    print("shit")
+                    print("shit") # this should never happen
                     break
         
     def writeSupranoLine(self):
@@ -160,6 +169,7 @@ class PartWriter:
                     self.supranoLine.append(allNotes[i:i+2])
                     lastNoteIndex = i
                     break
+
                 # check 5th
                 if chord >= 4:
                     if allNotes[j] == self.keystring[chord-1 + 4 - 7][0:1] and not self.isParallel5thOctave(self.bassline, self.supranoLine, num-1, j, True):
@@ -178,7 +188,8 @@ class PartWriter:
                     self.supranoLine.append(allNotes[i:i+2])
                     lastNoteIndex = i
                     break
-                #check 3rd
+
+                # check 3rd
                 if chord >= 6:
                     if allNotes[j] == self.keystring[chord-1 + 2 - 7][0:1] and not self.isParallel5thOctave(self.bassline, self.supranoLine, num-1, j, True):
                         self.supranoLine.append(allNotes[j:j+2])
@@ -209,10 +220,16 @@ class PartWriter:
     def writeAltoAndTenor(self):
         self.altoLine = []
         self.tenorLine = []
-        lastAlto = 22
+
+        # good starting notes
+        lastAlto = 22 
         lastTenor = 12
+
         for num, chord in enumerate(self.chords):
-            # see what note(s) is (are) missing eventually change
+            print(self.altoLine)
+            print(self.tenorLine)
+
+            # see what note(s) is (are) missing eventually change [root, third, fifth]
             counts = [1, 0, 0]
             fifth = ""
             third = ""
@@ -220,8 +237,11 @@ class PartWriter:
             # just in case the third of fifth need to be doubled
             backUpThird, backUpFifth = "", ""
 
+            # update counts of each chord member
             if self.supranoLine[num][0:1] == self.keystring[chord-1][0:1]:
                 counts[0] = 2
+
+            # fifth    
             if chord >= 4:
                 if self.supranoLine[num][0:1] == self.keystring[chord-1 + 4 - 7][0:1]:
                     counts[2] = 1
@@ -230,6 +250,8 @@ class PartWriter:
                 fifth = self.keystring[chord-1 + 4 - 7][0:1]
                 if self.supranoLine[num][0:1] == self.keystring[chord-1 + 4][0:1]:
                     counts[2] = 1
+
+            # third
             if chord >= 6:
                 if self.supranoLine[num][0:1] == self.keystring[chord-1 + 2 - 7][0:1]:
                     counts[1] = 1
@@ -239,6 +261,7 @@ class PartWriter:
                 if self.supranoLine[num][0:1] == self.keystring[chord-1 + 2][0:1]:
                     counts[1] = 1
             
+            # fill in the missing chord members
             i, j = lastAlto, lastAlto
             if counts[1] == 0:
                 lookingFor = third
@@ -246,6 +269,7 @@ class PartWriter:
             else:
                 lookingFor = fifth
                 lookingForIndex = 2
+
             while True:
                 if allNotes[j] == lookingFor and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
                     self.altoLine.append(allNotes[j:j+2])
@@ -258,6 +282,7 @@ class PartWriter:
                         lookingForIndex = 0
                     lastAlto = j
                     break
+
                 if allNotes[i] == lookingFor and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
                     self.altoLine.append(allNotes[i:i+2])
                     counts[lookingForIndex] += 1
@@ -269,6 +294,8 @@ class PartWriter:
                         lookingForIndex = 0
                     lastAlto = i
                     break
+
+                # setup backups just in case they need to be doubled
                 if backUpFifth == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
                         backUpFifth = allNotes[i:i+2]
@@ -279,10 +306,14 @@ class PartWriter:
                         backUpThird = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
                         backUpThird = allNotes[j:j+2]
+
+                # keep pointers within range
                 if i > altoRange[0]:
                     i -= 2
                 if j < altoRange[1]:
                     j += 2
+
+                # use backups if neccessary, prioritizing the fifth over the third
                 if i <= altoRange[0] and j >= altoRange[1]:
                     if counts[2] != 2 and backUpFifth != "":
                         self.altoLine.append(backUpFifth)
@@ -293,7 +324,7 @@ class PartWriter:
                         counts[1] += 1
                         print("doubled 3rd in alto")
                     else:
-                        print("fml")
+                        print("fml") # this will happen in the case of a bad chord progression
                         print(counts)
                     break
             
@@ -308,6 +339,8 @@ class PartWriter:
                     self.tenorLine.append(allNotes[j:j+2])
                     lastTenor = j
                     break
+
+                # setup backups just in case they need to be doubled
                 if backUpFifth == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
                         backUpFifth = allNotes[i:i+2]
@@ -318,10 +351,14 @@ class PartWriter:
                         backUpThird = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
                         backUpThird = allNotes[j:j+2]
+
+                # keep pointers within range
                 if i > tenorRange[0]:
                     i -= 2
                 if j < tenorRange[1]:
                     j += 2
+
+                # use backups if neccessary, prioritizing the fifth over the third
                 if i <= tenorRange[0] and j >= tenorRange[1]:
                     if counts[2] == 1 and backUpFifth != "":
                         self.tenorLine.append(backUpFifth)
@@ -332,7 +369,7 @@ class PartWriter:
                         counts[1] += 1
                         print("doubled 3rd in tenor")
                     else:
-                        print("fml")
+                        print("fml") # this will happen in the case of a bad chord progression
                         print(counts)
                     break
 
@@ -356,17 +393,14 @@ class PartWriter:
         self.writeBassLine()
         self.writeSupranoLine()
         self.writeAltoAndTenor()
-        #print("Suprano Line: " + "".join(self.supranoLine))
-        #print("Bass Line:    " + "".join(self.bassline))
         print(self.supranoLine)
         print(self.altoLine)
         print(self.tenorLine)
         print(self.bassline)
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I I I")
+    PartWriterImpl = PartWriter("C", "I V vi IV")
     PartWriterImpl.main()
 
 # edge cases: 
-# I V vi VI
-# I I I 
+# I V vi IV
