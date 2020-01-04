@@ -1,8 +1,8 @@
-# fix voice crossing
 # backtracking
 # add flat keys
-# fix ranges
-# make a constants file
+# add functionality for different amount of parts and optional starting notes
+# add priority for whether to add the root, third, or fifth, especially in suprano
+# BACKBURNER be able to play the music
 
 from constants import *
 
@@ -65,15 +65,9 @@ class PartWriter:
 
     def writeBassLine(self):
         self.bassline = []
-        lastNoteIndex = 0
 
-        # setting first note to root
-        for i in range(len(allNotes)):
-            if allNotes[i] == self.keystring[self.chords[0]-1][0:1]:
-                lastNoteIndex = i
-                break
-            else:
-                i += 1
+        # good starting note
+        lastNoteIndex = int((bassRange[1] - bassRange[0]) / 2 + bassRange[0])
 
         # write rest of bassline
         for chord in self.chords:
@@ -99,15 +93,9 @@ class PartWriter:
         
     def writeSupranoLine(self):
         self.supranoLine = []
-        i = supranoRange[1]
 
-        # setting first note to bass
-        while True:
-            if allNotes[i] == self.keystring[self.chords[0]-1][0:1]:
-                lastNoteIndex = i
-                break
-            else:
-                i -= 2
+        # good starting note
+        lastNoteIndex = int((supranoRange[1] - supranoRange[0]) / 2) + supranoRange[0]
 
         for num, chord in enumerate(self.chords):
             i, j = lastNoteIndex, lastNoteIndex
@@ -174,12 +162,14 @@ class PartWriter:
         self.tenorLine = []
 
         # good starting notes
-        lastAlto = 22 
-        lastTenor = 12
+        lastAlto = int((altoRange[1] - altoRange[0]) / 2 + altoRange[0])
+        lastTenor = int((tenorRange[1] - tenorRange[0]) / 2 + tenorRange[0])
 
         for num, chord in enumerate(self.chords):
+            print(self.supranoLine)
             print(self.altoLine)
             print(self.tenorLine)
+            print(self.bassline)
 
             # see what note(s) is (are) missing eventually change [root, third, fifth]
             counts = [1, 0, 0]
@@ -276,7 +266,7 @@ class PartWriter:
                         counts[1] += 1
                         print("doubled 3rd in alto")
                     else:
-                        print("fml") # this will happen in the case of a bad chord progression
+                        print("fml alto") # this will happen in the case of a bad chord progression
                         print(counts)
                     break
             
@@ -321,7 +311,7 @@ class PartWriter:
                         counts[1] += 1
                         print("doubled 3rd in tenor")
                     else:
-                        print("fml") # this will happen in the case of a bad chord progression
+                        print("fml tenor") # this will happen in the case of a bad chord progression
                         print(counts)
                     break
 
@@ -351,8 +341,9 @@ class PartWriter:
         print(self.bassline)
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I V vi IV")
+    PartWriterImpl = PartWriter("C", "I ii IV V")
     PartWriterImpl.main()
 
 # edge cases: 
 # I V vi IV
+# I ii IV V
