@@ -40,7 +40,7 @@ class PartWriter:
             if allNotes[allNotes.index(line1[startingPos][0:1]) + 8] == line2[startingPos][0:1] and allNotes[allNotes.index(line1[startingPos+1][0:1]) + 8] == allNotes[newNoteIndex]:
                 return True
         else:
-            if allNotes[allNotes.index(line1[startingPos][0:1]) + 10] == line2[startingPos][0:1] and allNotes[allNotes.index(line1[startingPos+1][0:1]) + 10] == allNotes[newNoteIndex]:
+            if allNotes[allNotes.index(line1[startingPos][0:1]) - 8] == line2[startingPos][0:1] and allNotes[allNotes.index(line1[startingPos+1][0:1]) - 8] == allNotes[newNoteIndex]:
                 return True
 
     def isVoiceCrossing(self, line1, startingPos, newNoteIndex, lower):
@@ -186,7 +186,7 @@ class PartWriter:
             chord = self.chords[num]
 
             # print(str(num))
-            # self.printAllVoices()
+            self.printAllVoices()
             # print("blacklist" + str(blacklist))
 
             # frequency of each chord member
@@ -194,6 +194,7 @@ class PartWriter:
             fifth = ""
             third = ""
             root = self.keystring[chord-1][0:1]
+            backtrack = False # used to continue before a backtrack
 
             lookingFor = [True, True, True]
 
@@ -235,7 +236,9 @@ class PartWriter:
                 if (counts[k] == 2 and k == 0) or (counts[k] == 1 and k != 0):
                     lookingFor[k] = False
 
+            # alto
             while True:
+                backtrack = False
                 # check j
                 if allNotes[j] == root and lookingFor[0] == True and not allNotes[j] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
@@ -327,12 +330,20 @@ class PartWriter:
                         print("BACKTRACK")
                         blacklist.append(self.altoLine[-1][0:1])
                         del self.altoLine[-1]
-                        num -= 2
+                        num -= 1
+                        backtrack = True
                         break
             
+            if backtrack:
+                continue
             i, j = lastTenor, lastTenor
+
             backUpThird, backUpFifth = "", "" # reset to be used by tenor
+
+            # tenor
             while True:
+                backtrack = True
+                print(lookingFor)
                 # check i
                 if allNotes[i] == root and lookingFor[0] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
@@ -413,8 +424,10 @@ class PartWriter:
                         blacklist.append(self.altoLine[-1][0:1])
                         del self.altoLine[-1]
                         del self.tenorLine[-1]
-                        num -= 1
+                        backtrack = True
                         break
+            if backtrack:
+                continue
             num += 1
 
     def printChords(self):
@@ -440,7 +453,7 @@ class PartWriter:
         self.printAllVoices()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I V vi IV")
+    PartWriterImpl = PartWriter("C", "I V vi IV vii I")
     PartWriterImpl.main()
 
 # edge cases: 
