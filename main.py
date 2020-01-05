@@ -44,6 +44,7 @@ class PartWriter:
                 return True
 
     def isVoiceCrossing(self, line1, startingPos, newNoteIndex, lower):
+        return False #QUICK FIX
         if startingPos < 0:
             return False
 
@@ -183,18 +184,16 @@ class PartWriter:
 
         num = 0
         while num < len(self.chords):
-            chord = self.chords[num]
-
-            # print(str(num))
             self.printAllVoices()
-            # print("blacklist" + str(blacklist))
+            print(blacklist)
+            chord = self.chords[num]
+            backtrack = False
 
             # frequency of each chord member
             counts = [0, 0, 0]
             fifth = ""
             third = ""
             root = self.keystring[chord-1][0:1]
-            backtrack = False # used to continue before a backtrack
 
             lookingFor = [True, True, True]
 
@@ -238,74 +237,90 @@ class PartWriter:
 
             # alto
             while True:
-                backtrack = False
                 # check j
                 if allNotes[j] == root and lookingFor[0] == True and not allNotes[j] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
-                        self.altoLine.append(allNotes[j:j+2])
-                        lookingFor[0] = False
-                        counts[0] += 1
-                        lastAlto = j
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, j, False):
+                            self.altoLine.append(allNotes[j:j+2])
+                            counts[0] += 1
+                            if counts[0] == 2:
+                                lookingFor[0] = False
+                            lastAlto = j
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 if allNotes[j] == fifth and lookingFor[2] == True and not allNotes[j] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
-                        self.altoLine.append(allNotes[j:j+2])
-                        lookingFor[2] = False
-                        counts[2] += 1
-                        lastAlto = j
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, j, False):
+                            self.altoLine.append(allNotes[j:j+2])
+                            lookingFor[2] = False
+                            counts[2] += 1
+                            lastAlto = j
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 if allNotes[j] == third and lookingFor[1] == True and not allNotes[j] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
-                        self.altoLine.append(allNotes[j:j+2])
-                        lookingFor[1] = False
-                        counts[1] += 1
-                        lastAlto = j
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, j, False):
+                            self.altoLine.append(allNotes[j:j+2])
+                            lookingFor[1] = False
+                            counts[1] += 1
+                            lastAlto = j
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 # check i
                 if allNotes[i] == root and lookingFor[0] == True and not allNotes[i] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
-                        self.altoLine.append(allNotes[i:i+2])
-                        lookingFor[0] = False
-                        counts[0] += 1
-                        lastAlto = i
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, i, False):
+                            self.altoLine.append(allNotes[i:i+2])
+                            lookingFor[0] = False
+                            counts[0] += 1
+                            lastAlto = i
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 if allNotes[i] == fifth and lookingFor[2] == True and not allNotes[i] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
-                        self.altoLine.append(allNotes[i:i+2])
-                        lookingFor[2] = False
-                        counts[2] += 1
-                        lastAlto = i
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, i, False):
+                            self.altoLine.append(allNotes[i:i+2])
+                            lookingFor[2] = False
+                            counts[2] += 1
+                            lastAlto = i
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 if allNotes[i] == third and lookingFor[1] == True and not allNotes[i] in blacklist:
                     if not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
-                        self.altoLine.append(allNotes[i:i+2])
-                        lookingFor[1] = False
-                        counts[1] += 1
-                        lastAlto = i
-                        blacklist = []
-                        break
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, i, False):
+                            self.altoLine.append(allNotes[i:i+2])
+                            lookingFor[1] = False
+                            counts[1] += 1
+                            lastAlto = i
+                            blacklist = []
+                            backtrack = False
+                            break
 
                 # setup backups just in case they need to be doubled
                 if backUpFifth == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
-                        backUpFifth = allNotes[i:i+2]
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, i, False):
+                            backUpFifth = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
-                        backUpFifth = allNotes[j:j+2]
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, j, False):
+                            backUpFifth = allNotes[j:j+2]
                 if backUpThird == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, i, False):
-                        backUpThird = allNotes[i:i+2]
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, i, False):
+                            backUpThird = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.altoLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.altoLine, num-1, j, False):
-                        backUpThird = allNotes[j:j+2]
+                        if not self.isVoiceCrossing(self.supranoLine, num-1, j, False):
+                            backUpThird = allNotes[j:j+2]
 
                 # keep pointers within range
                 if i > altoRange[0]:
@@ -317,88 +332,99 @@ class PartWriter:
                 if i <= altoRange[0] and j >= altoRange[1]:
                     if counts[2] != 2 and backUpFifth != "":
                         self.altoLine.append(backUpFifth)
+                        backtrack = False
                         counts[2] += 1
                         print("doubled 5th in alto")
                         break
                     elif backUpThird != "":
                         self.altoLine.append(backUpThird)
+                        backtrack = False
                         counts[1] += 1
                         print("doubled 3rd in alto")
                         break
                     else:
                         # BACKTRACKING
-                        print("BACKTRACK")
                         blacklist.append(self.altoLine[-1][0:1])
                         del self.altoLine[-1]
-                        num -= 1
+                        del self.tenorLine[-1]
                         backtrack = True
+                        num -= 1
                         break
-            
+
             if backtrack:
                 continue
+        
             i, j = lastTenor, lastTenor
 
             backUpThird, backUpFifth = "", "" # reset to be used by tenor
 
             # tenor
             while True:
-                backtrack = True
-                print(lookingFor)
                 # check i
                 if allNotes[i] == root and lookingFor[0] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
-                        self.tenorLine.append(allNotes[i:i+2])
-                        lookingFor[0] = False
-                        lastTenor = i
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, i, True) and not self.isVoiceCrossing(self.altoLine, num-1, i, False):
+                            self.tenorLine.append(allNotes[i:i+2])
+                            lookingFor[0] = False
+                            lastTenor = i
+                            break
 
                 if allNotes[i] == fifth and lookingFor[2] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
-                        self.tenorLine.append(allNotes[i:i+2])
-                        lookingFor[2] = False
-                        lastTenor = i
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, i, True) and not self.isVoiceCrossing(self.altoLine, num-1, i, False):
+                            self.tenorLine.append(allNotes[i:i+2])
+                            lookingFor[2] = False
+                            lastTenor = i
+                            break
 
                 if allNotes[i] == third and lookingFor[1] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
-                        self.tenorLine.append(allNotes[i:i+2])
-                        lookingFor[1] = False
-                        lastTenor = i
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, i, True) and not self.isVoiceCrossing(self.altoLine, num-1, i, False):
+                            self.tenorLine.append(allNotes[i:i+2])
+                            lookingFor[1] = False
+                            lastTenor = i
+                            break
 
                 # check j
                 if allNotes[j] == root and lookingFor[0] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
-                        self.tenorLine.append(allNotes[j:j+2])
-                        lookingFor[0] = False
-                        lastTenor = j
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, j, True) and not self.isVoiceCrossing(self.altoLine, num-1, j, False):
+                            self.tenorLine.append(allNotes[j:j+2])
+                            lookingFor[0] = False
+                            lastTenor = j
+                            break
 
                 if allNotes[j] == fifth and lookingFor[2] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
-                        self.tenorLine.append(allNotes[j:j+2])
-                        lookingFor[2] = False
-                        lastTenor = j
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, j, True) and not self.isVoiceCrossing(self.altoLine, num-1, j, False):
+                            self.tenorLine.append(allNotes[j:j+2])
+                            lookingFor[2] = False
+                            lastTenor = j
+                            break
 
                 if allNotes[j] == third and lookingFor[1] == True:
                     if not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
-                        self.tenorLine.append(allNotes[j:j+2])
-                        lookingFor[1] = False
-                        lastTenor = j
-                        break
+                        if not self.isVoiceCrossing(self.bassline, num-1, j, True) and not self.isVoiceCrossing(self.altoLine, num-1, j, False):
+                            self.tenorLine.append(allNotes[j:j+2])
+                            lookingFor[1] = False
+                            lastTenor = j
+                            break
 
                 # setup backups just in case they need to be doubled
                 if backUpFifth == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
-                        backUpFifth = allNotes[i:i+2]
+                        if not self.isVoiceCrossing(self.bassline, num-1, i, True) and not self.isVoiceCrossing(self.altoLine, num-1, i, False):
+                            backUpFifth = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
-                        backUpFifth = allNotes[j:j+2]
+                        if not self.isVoiceCrossing(self.bassline, num-1, j, True) and not self.isVoiceCrossing(self.altoLine, num-1, j, False):
+                            backUpFifth = allNotes[j:j+2]
                 if backUpThird == "":
                     if allNotes[i] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, i, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, i, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, i, False):
-                        backUpThird = allNotes[i:i+2]
+                        if not self.isVoiceCrossing(self.bassline, num-1, i, True) and not self.isVoiceCrossing(self.altoLine, num-1, i, False):
+                            backUpThird = allNotes[i:i+2]
                     elif allNotes[j] == fifth and not self.isParallel5thOctave(self.bassline, self.tenorLine, num-1, j, True) and not self.isParallel5thOctave(self.supranoLine, self.tenorLine, num-1, j, False) and not self.isParallel5thOctave(self.altoLine, self.tenorLine, num-1, j, False):
-                        backUpThird = allNotes[j:j+2]
+                        if not self.isVoiceCrossing(self.bassline, num-1, j, True) and not self.isVoiceCrossing(self.altoLine, num-1, j, False):
+                            backUpThird = allNotes[j:j+2]
 
                 # keep pointers within range
                 if i > tenorRange[0]:
@@ -420,14 +446,10 @@ class PartWriter:
                         break
                     else:
                         # BACKTRACKING
-                        print("BACKTRACK")
                         blacklist.append(self.altoLine[-1][0:1])
                         del self.altoLine[-1]
-                        del self.tenorLine[-1]
-                        backtrack = True
+                        num -= 1
                         break
-            if backtrack:
-                continue
             num += 1
 
     def printChords(self):
@@ -453,9 +475,8 @@ class PartWriter:
         self.printAllVoices()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I V vi IV vii I")
+    PartWriterImpl = PartWriter("C", "I V vi IV")
     PartWriterImpl.main()
 
 # edge cases: 
-# I V vi IV
 # I ii IV V
