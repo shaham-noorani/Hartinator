@@ -15,10 +15,10 @@ class TestPartWriter(unittest.TestCase):
         testObject = PartWriter("C", "I V I")
         testObject.generateKeystring()
         testObject.setChordProgression()
-        supranoLine = ["C5", "G5", "C5"]
+        sopranoLine = ["C5", "G5", "C5"]
         bassline = ["C3", "G3", "C3"]
         newNoteIndex = allNotes.index(bassline[1])
-        self.assertTrue(testObject.isParallel5thOctave(supranoLine, bassline, 0, newNoteIndex, False))
+        self.assertTrue(testObject.isParallel5thOctave(sopranoLine, bassline, 0, newNoteIndex, False))
 
 if __name__ == '__main__':
     unittest.main()
