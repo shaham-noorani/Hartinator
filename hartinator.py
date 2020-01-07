@@ -4,6 +4,8 @@
 # add priority for whether to add the root, third, or fifth, especially in suprano
 # BACKBURNER be able to play the music
 # write unit tests
+# once tenor and alto break, back track suprano
+# back track before doubling third or fifth
 
 from constants import *
 
@@ -44,7 +46,6 @@ class PartWriter:
                 return True
 
     def isVoiceCrossing(self, line1, startingPos, newNoteIndex, lower):
-        # return False #QUICK FIX
         if startingPos < 0:
             return False
 
@@ -474,8 +475,9 @@ class PartWriter:
         self.printAllVoices()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I V vi IV")
+    PartWriterImpl = PartWriter("C", "I IV vi V I")
     PartWriterImpl.main()
 
 # edge cases: 
 # I ii IV V
+# I IV vi V I IV V I
