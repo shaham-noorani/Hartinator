@@ -3,9 +3,9 @@
 # add functionality for different amount of parts and optional starting notes
 # add priority for whether to add the root, third, or fifth, especially in suprano
 # BACKBURNER be able to play the music
+# write unit tests
 
 from constants import *
-import os
 
 class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
@@ -44,16 +44,17 @@ class PartWriter:
                 return True
 
     def isVoiceCrossing(self, line1, startingPos, newNoteIndex, lower):
-        return False #QUICK FIX
+        # return False #QUICK FIX
         if startingPos < 0:
             return False
 
-        comparisonNote = allNotes.index(line1[startingPos][0:1])
+        comparisonNote = allNotes.index(line1[startingPos])
+
         if lower: # if line 1 is supposed to be lower than line 2
-            if newNoteIndex > comparisonNote:
+            if newNoteIndex < comparisonNote:
                 return True
         else:
-            if newNoteIndex < comparisonNote:
+            if newNoteIndex > comparisonNote:
                 return True
 
         return False
@@ -184,8 +185,6 @@ class PartWriter:
 
         num = 0
         while num < len(self.chords):
-            self.printAllVoices()
-            print(blacklist)
             chord = self.chords[num]
             backtrack = False
 
