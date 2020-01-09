@@ -7,6 +7,14 @@ majorKeys = {
     "B": ["B", "C#", "D#", "E", "F#", "G#", "A#"],
     "F#": ["F#", "G#", "A#", "B", "C#", "D#", "E#"],
     "C#": ["C#", "D#", "E#", "F#", "G#", "A#", "B#"],
+    "F": ["F", "G", "A", "Bb", "C", "D", "E"],
+    "Bb": ["Bb", "C", "D", "Eb", "F", "G", "A"],
+    "Eb": ["Eb", "F", "G", "A", "Bb", "C", "D"],
+    "Ab": ["Ab", "Bb", "C", "Db", "Eb", "F", "G"],
+    "Db": ["Db", "Eb", "F", "Gb", "Ab", "Bb", "C"],
+    "Gb": ["Gb", "Ab", "Bb", "Cb", "Db", "Eb", "F"],
+    "Cb": ["Cb", "Db", "Eb", "F", "Gb", "Ab", "Bb"],
+    "Fb": ["Fb", "Gb", "Ab", "Bb", "Cb", "Db", "Eb"]
 }
 
 minorKeys = {

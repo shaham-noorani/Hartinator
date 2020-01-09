@@ -1,31 +1,88 @@
-# backtracking before falling back on doubling the third or fifth
-# add flat keys
+# add flat keys (only minor left)
 # add functionality for different amount of parts and optional starting notes
-# add priority for whether to add the root, third, or fifth, especially in soprano
 # BACKBURNER be able to play the music
-# write unit tests
+# BACKBURNER produce sheet music
 # once tenor and alto break, back track soprano
 # back track before doubling third or fifth
-# create chord object
 # write soprano, alto, and tenor at the same time
+# have accidentals in the note line
 
-from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange
+from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
 
 class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
         self.key = key
-        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
+        self.chords = []
         self.sopranoLine = []
         self.altoLine = []
         self.tenorLine = []
         self.bassLine = []
+
+        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
+        for romanNumeral in self.chordProgression:
+            self.chords.append(Chord(romanNumeral, self.key))
 
     def printAllVoices(self):
         print("Soprano: " + str(self.sopranoLine))
         print("Alto:    " + str(self.altoLine))
         print("Tenor:   " + str(self.tenorLine))
         print("Bass:    " + str(self.bassLine))
+
+    def printAllVoicesWithAccidentals(self):
+        line = []
+
+        if self.key in majorKeys:
+            keystring = majorKeys[self.key]
+        else:
+            keystring = minorKeys[self.key]
+        print(str(keystring))
+
+        for note in self.sopranoLine:
+            if (note[0] + "#") in keystring:
+                line.append(note[0] + "#" + note[1])
+            elif (note[0] + "b") in keystring:
+                line.append(note[0] + "b" + note[1])
+            else:
+                line.append(note)
+
+        print("Soprano: " + str(line))
+
+        line = []
+
+        for note in self.altoLine:
+            if (note[0] + "#") in keystring:
+                line.append(note[0] + "#" + note[1])
+            elif (note[0] + "b") in keystring:
+                line.append(note[0] + "b" + note[1])
+            else:
+                line.append(note)
+                
+        print("Alto:    " + str(line))
+
+        line = []
+
+        for note in self.tenorLine:
+            if (note[0] + "#") in keystring:
+                line.append(note[0] + "#" + note[1])
+            elif (note[0] + "b") in keystring:
+                line.append(note[0] + "b" + note[1])
+            else:
+                line.append(note)
+                
+        print("Tenor:   " + str(line))
+
+        line = []
+
+        for note in self.bassLine:
+            if (note[0] + "#") in keystring:
+                line.append(note[0] + "#" + note[1])
+            elif (note[0] + "b") in keystring:
+                line.append(note[0] + "b" + note[1])
+            else:
+                line.append(note)
+                
+        print("Bass:    " + str(line))
 
     def isParallel5thOctave(self, voice, otherVoices, beat, newNoteIndex):
         if beat < 0:
@@ -142,45 +199,40 @@ class PartWriter:
 
         priorSoprano, priorAlto, priorTenor, priorBass = "", "", "", ""
 
-        if not len(self.sopranoLine) < beat+1:
+        if len(self.sopranoLine) > beat+1:
             priorSoprano = allNotes.index(self.sopranoLine[beat])
-        if not len(self.altoLine) < beat+1:
+        if len(self.altoLine) > beat+1:
             priorAlto = allNotes.index(self.altoLine[beat])
-        if not len(self.tenorLine) < beat+1:
+        if len(self.tenorLine) > beat+1:
             priorTenor = allNotes.index(self.tenorLine[beat])
-        if not len(self.bassLine) < beat+1:
+        if len(self.bassLine) > beat+1:
             priorBass = allNotes.index(self.bassLine[beat])
 
-        if voice == "soprano" and not priorAlto:
+        if voice == "soprano" and priorAlto:
             if newNoteIndex < priorAlto:
                 return True
 
-        if voice == "alto" and not priorSoprano:
+        if voice == "alto" and priorSoprano:
             if newNoteIndex > priorSoprano:
                 return True
 
-        if voice == "alto" and not priorTenor:
+        if voice == "alto" and priorTenor:
             if newNoteIndex < priorTenor:
                 return True
 
-        if voice == "tenor" and not priorAlto:
+        if voice == "tenor" and priorAlto:
             if newNoteIndex > priorAlto:
                 return True
 
-        if voice == "tenor" and not priorBass:
+        if voice == "tenor" and priorBass:
             if newNoteIndex < priorBass:
                 return True
 
-        if voice == "bass" and not priorTenor:
+        if voice == "bass" and priorTenor:
             if newNoteIndex > priorTenor:
                 return True
 
         return False
-        
-    def setChordProgression(self):
-        self.chords = []
-        for romanNumeral in self.chordProgression:
-            self.chords.append(Chord(romanNumeral, self.key))
 
     def writeBassLine(self):
         # good starting note
@@ -209,14 +261,16 @@ class PartWriter:
                     break
         
     def writeSopranoLine(self):
+
         # good starting note
         lastNoteIndex = int((sopranoRange[1] - sopranoRange[0]) / 2) + sopranoRange[0]
 
         for num, chord in enumerate(self.chords):
             i, j = lastNoteIndex, lastNoteIndex
+
             while True:
                 if not self.isParallel5thOctave("soprano", ["bass"], num-1, j):
-                    # check root
+
                     if allNotes[j] == chord.root[0:1]:
                             self.sopranoLine.append(allNotes[j:j+2])
                             lastNoteIndex = j
@@ -226,7 +280,6 @@ class PartWriter:
                         lastNoteIndex = i
                         break
 
-                    # check 5th
                     if allNotes[j] == chord.fifth[0:1]:
                         self.sopranoLine.append(allNotes[j:j+2])
                         lastNoteIndex = j
@@ -236,7 +289,6 @@ class PartWriter:
                         lastNoteIndex = i
                         break
 
-                    # check 3rd
                     if allNotes[j] == chord.third[0:1]:
                         self.sopranoLine.append(allNotes[j:j+2])
                         lastNoteIndex = j
@@ -252,16 +304,16 @@ class PartWriter:
                 if j < sopranoRange[1]:
                     j += 2
                 if i <= sopranoRange[0] and j >= sopranoRange[1]:
-                    print("shit") # this should be physically impossible, but just in case
+                    print("shit") # this should never happen
                     break
 
     def writeAltoAndTenor(self):
+
         # good starting notes
         lastAlto = int((altoRange[1] - altoRange[0]) / 2 + altoRange[0])
         lastTenor = int((tenorRange[1] - tenorRange[0]) / 2 + tenorRange[0])
 
         # used to store notes in the alto that cause errors in the next mesure for backtracking
-        # default to relevant empty values
         blacklist = []
 
         num = 0
@@ -284,11 +336,9 @@ class PartWriter:
             if self.sopranoLine[num][0:1] == chord.root[0:1]:
                 counts[0] += 1
 
-            # fifth
             if self.sopranoLine[num][0:1] == chord.fifth[0:1]:
                 counts[2] = 1
 
-            # third
             if self.sopranoLine[num][0:1] == chord.third[0:1]:
                 counts[1] = 1
 
@@ -302,6 +352,7 @@ class PartWriter:
 
             # alto
             while True:
+
                 # check j
                 if not self.isVoiceCrossing("alto", num-1, j) and not self.isParallel5thOctave("alto", ["suprano"], num-1, j):
 
@@ -404,7 +455,7 @@ class PartWriter:
                         num -= 1
                         break
 
-            if backtrack:
+            if backtrack: # so the something isn't added to the tenor
                 continue
         
             i, j = lastTenor, lastTenor
@@ -413,6 +464,7 @@ class PartWriter:
 
             # tenor
             while True:
+
                 # check i
                 if not self.isVoiceCrossing("tenor", num-1, i) and not self.isParallel5thOctave("tenor", ["alto", "bass"], num-1, i):
 
@@ -498,15 +550,15 @@ class PartWriter:
             self.key = input("What is the key?: ")
         if self.chordProgression == None:
             self.chordProgression = input("Enter a chord progression (seperated by spaces): ").split(" ")
-        self.setChordProgression()
         self.printChords()
         self.writeBassLine()
         self.writeSopranoLine()
         self.writeAltoAndTenor()
         self.printAllVoices()
+        # self.printAllVoicesWithAccidentals()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I IV vi V I")
+    PartWriterImpl = PartWriter("E", "I V I")
     PartWriterImpl.main()
 
 # edge cases: 
