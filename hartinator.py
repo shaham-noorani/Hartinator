@@ -5,7 +5,6 @@
 # once tenor and alto break, back track soprano
 # back track before doubling third or fifth
 # write soprano, alto, and tenor at the same time
-# have accidentals in the note line
 
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
@@ -36,7 +35,6 @@ class PartWriter:
             keystring = majorKeys[self.key]
         else:
             keystring = minorKeys[self.key]
-        print(str(keystring))
 
         for note in self.sopranoLine:
             if (note[0] + "#") in keystring:
