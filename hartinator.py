@@ -232,6 +232,10 @@ class PartWriter:
 
         return False
 
+    def isSpacingValid(self, voice, voices, num):
+        for v in voices:
+            return v
+
     def writeBassLine(self):
         # good starting note
         lastNoteIndex = int((bassRange[1] - bassRange[0]) / 2 + bassRange[0])
@@ -553,10 +557,10 @@ class PartWriter:
         self.writeSopranoLine()
         self.writeAltoAndTenor()
         self.printAllVoices()
-        # self.printAllVoicesWithAccidentals()
+        self.printAllVoicesWithAccidentals()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("E", "I V I")
+    PartWriterImpl = PartWriter("E", "I IV ii V I")
     PartWriterImpl.main()
 
 # edge cases: 
