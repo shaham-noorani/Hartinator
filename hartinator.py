@@ -234,7 +234,7 @@ class PartWriter:
 
     def isSpacingValid(self, voice, voices, num):
         for v in voices:
-            return v
+            return v # NEED TO DO
 
     def writeBassLine(self):
         # good starting note
