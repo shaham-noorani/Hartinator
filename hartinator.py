@@ -7,6 +7,9 @@
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
 
+import os
+# import pygame
+
 class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
         self.key = key
@@ -27,6 +30,7 @@ class PartWriter:
         print("Bass:    " + str(self.bassLine))
 
     def printAllVoicesWithAccidentals(self):
+        self.sopranoLineWithAccidentals = []
         line = []
 
         if self.key in majorKeys:
@@ -42,8 +46,10 @@ class PartWriter:
             else:
                 line.append(note)
 
+        self.sopranoLineWithAccidentals = line
         print("Soprano: " + str(line))
 
+        self.altoLineWithAccidentals = []
         line = []
 
         for note in self.altoLine:
@@ -53,9 +59,11 @@ class PartWriter:
                 line.append(note[0] + "b" + note[1])
             else:
                 line.append(note)
-                
+        
+        self.altoLineWithAccidentals = line
         print("Alto:    " + str(line))
 
+        self.tenorLineWithAccidentals = []
         line = []
 
         for note in self.tenorLine:
@@ -65,9 +73,11 @@ class PartWriter:
                 line.append(note[0] + "b" + note[1])
             else:
                 line.append(note)
-                
+
+        self.tenorLineWithAccidentals = line                
         print("Tenor:   " + str(line))
 
+        self.bassLineWithAccidentals = []
         line = []
 
         for note in self.bassLine:
@@ -77,7 +87,8 @@ class PartWriter:
                 line.append(note[0] + "b" + note[1])
             else:
                 line.append(note)
-                
+
+        self.bassLineWithAccidentals = line
         print("Bass:    " + str(line))
 
     def isParallel5thOctave(self, voice, otherVoices, beat, newNoteIndex):
@@ -260,58 +271,11 @@ class PartWriter:
                 if i <= bassRange[0] and j >= bassRange[1]:
                     print("shit") # this should never happen
                     break
-        
-    def writeSopranoLine(self):
-
-        # good starting note
-        lastNoteIndex = int((sopranoRange[1] - sopranoRange[0]) / 2) + sopranoRange[0]
-
-        for num, chord in enumerate(self.chords):
-            i, j = lastNoteIndex, lastNoteIndex
-
-            while True:
-                if not self.isParallel5thOctave("soprano", ["bass"], num-1, j):
-
-                    if allNotes[j] == chord.root[0:1]:
-                            self.sopranoLine.append(allNotes[j:j+2])
-                            lastNoteIndex = j
-                            break
-                    if allNotes[i] == chord.root[0:1]:
-                        self.sopranoLine.append(allNotes[i:i+2])
-                        lastNoteIndex = i
-                        break
-
-                    if allNotes[j] == chord.fifth[0:1]:
-                        self.sopranoLine.append(allNotes[j:j+2])
-                        lastNoteIndex = j
-                        break     
-                    elif allNotes[i] == chord.fifth[0:1]:
-                        self.sopranoLine.append(allNotes[i:i+2])
-                        lastNoteIndex = i
-                        break
-
-                    if allNotes[j] == chord.third[0:1]:
-                        self.sopranoLine.append(allNotes[j:j+2])
-                        lastNoteIndex = j
-                        break
-                    elif allNotes[i] == chord.third[0:1]:
-                        self.sopranoLine.append(allNotes[i:i+2])
-                        lastNoteIndex = i
-                        break
-
-                # make sure the range is not being left
-                if i > sopranoRange[0]:
-                    i -= 2
-                if j < sopranoRange[1]:
-                    j += 2
-                if i <= sopranoRange[0] and j >= sopranoRange[1]:
-                    print("shit") # this should never happen
-                    break
 
     def writeAltoTenorAndSoprano(self):
 
         # good starting notes
-        lastSoprano = int((sopranoRange[1] - sopranoRange[0]) / 2) + sopranoRange[0]
+        lastSoprano = allNotes.index("C5")
         lastAlto = int((altoRange[1] - altoRange[0]) / 2 + altoRange[0])
         lastTenor = int((tenorRange[1] - tenorRange[0]) / 2 + tenorRange[0])
 
@@ -321,6 +285,9 @@ class PartWriter:
 
         num = 0
         while num < len(self.chords):
+            self.printAllVoices()
+            print(sopranoBlacklist)
+            print(altoBlacklist)
             chord = self.chords[num]
             backtrack = False
 
@@ -340,6 +307,8 @@ class PartWriter:
 
             while True:
                 backtrack = False
+                print(allNotes[i:i+2])
+                print(allNotes[j:j+2])
 
                 # check j
                 if not self.isParallel5thOctave("soprano", ["bass"], num-1, j) and not self.isVoiceCrossing("soprano", num-1, j):
@@ -624,6 +593,85 @@ class PartWriter:
         for chord in self.chords:
             print(chord.root + " " + chord.third + " " + chord.fifth)
 
+    def createSheetMusicPdf(self, createMidiFile):
+        sopranoNotes, altoNotes, tenorNotes, bassNotes = "", "", "", ""
+        for i in self.sopranoLineWithAccidentals:
+            sopranoNotes += i[0]
+            if "#" in i:
+                sopranoNotes += "is "
+            elif "b" in i:
+                sopranoNotes += "es "
+            else:
+                sopranoNotes += " "
+        for i in self.altoLineWithAccidentals:
+            altoNotes += i[0]
+            if "#" in i:
+                altoNotes += "is "
+            elif "b" in i:
+                altoNotes += "es "
+            else:
+                altoNotes += " "
+        for i in self.tenorLineWithAccidentals:
+            tenorNotes += i[0]
+            if "#" in i:
+                tenorNotes += "is "
+            elif "b" in i:
+                tenorNotes += "es "
+            else:
+                tenorNotes += " "
+        for i in self.bassLineWithAccidentals:
+            bassNotes += i[0]
+            if "#" in i:
+                bassNotes += "is "
+            elif "b" in i:
+                bassNotes += "es "
+            else:
+                bassNotes += " "
+
+        try:
+            from random_word import RandomWords
+            self.fileName = RandomWords().get_random_word(includePartOfSpeech = "noun", maxLength = 6) + ".ly"
+        except Exception:
+            self.fileName = "banana.ly"
+
+        fout = open(self.fileName, "w")
+
+        if self.key in majorKeys:
+            quality = "\\major"
+        else:
+            quality = "\\minor"
+
+        fileString = ""
+
+        fileString += "global = { \\key " + self.key.lower() + " " + quality + " }" 
+        fileString += "sopMusic = \\relative c\'\' { " + sopranoNotes.lower() + "}"
+        fileString += "altoMusic = \\relative c\' { " + altoNotes.lower() + "}"
+        fileString += "tenorMusic = \\relative c\' { " + tenorNotes.lower() + "}"
+        fileString += "bassMusic = \\relative c { " + bassNotes.lower() + "}"
+        fileString += "\\score { \\new ChoirStaff <<\\new Staff = \"women\" << \\new Voice = \"sopranos\" { \\voiceOne << \\global \\sopMusic >> }"
+        fileString += "\\new Voice = \"altos\" { \\voiceTwo << \\global \\altoMusic >> } >>"
+        fileString += "\\new Staff = \"men\" << \\clef bass \\new Voice = \"tenors\" { \\voiceOne << \\global \\tenorMusic >> }"
+        fileString += "\\new Voice = \"basses\" { \\voiceTwo << \\global \\bassMusic >> } >> >> } \\version \"2.18.2\""
+        
+        fout.write(fileString)
+        fout.close()
+
+        os.system("lilypond " + self.fileName)
+        os.system("open " + self.fileName[0:-3] + ".pdf")
+        print("Look for a file named \'" + self.fileName + "\'!")
+        if createMidiFile:
+            fout = open(self.fileName, "w")
+            newFileString = fileString[0:fileString.index("score") + 8] + "\\midi {} " + fileString[fileString.index("score") + 8:-1] + fileString[-1]
+            fout.write(newFileString)
+            fout.close()
+            os.system("lilypond " + self.fileName)
+            print("The midi file will also have the same name!")
+
+    # def playMidiFile(self):
+    #     midiFileName = self.fileName[0:-3] + ".midi"
+    #     pygame.init()
+    #     pygame.music.mixer.load(midiFileName)
+    #     pygame.music.mixer.play()
 
     def main(self):
         if self.key == None:
@@ -635,9 +683,11 @@ class PartWriter:
         self.writeAltoTenorAndSoprano()
         self.printAllVoices()
         self.printAllVoicesWithAccidentals()
+        self.createSheetMusicPdf(True)
+        # self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("E", "I IV ii V I")
+    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I")
     PartWriterImpl.main()
 
 # edge cases: 
