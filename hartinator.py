@@ -249,7 +249,7 @@ class PartWriter:
 
     def writeBassLine(self):
         # good starting note
-        lastNoteIndex = int((bassRange[1] - bassRange[0]) / 2 + bassRange[0])
+        lastNoteIndex = allNotes.index("C3")
 
         # write rest of bassLine
         for chord in self.chords:
@@ -277,8 +277,8 @@ class PartWriter:
 
         # good starting notes
         lastSoprano = allNotes.index("C5")
-        lastAlto = int((altoRange[1] - altoRange[0]) / 2 + altoRange[0])
-        lastTenor = int((tenorRange[1] - tenorRange[0]) / 2 + tenorRange[0])
+        lastAlto = allNotes.index("E4")
+        lastTenor = allNotes.index("G3")
 
         # used to store notes in the soprano/alto that cause errors in the next beat (used for backtracking)
         sopranoBlacklist = []
@@ -286,9 +286,6 @@ class PartWriter:
 
         num = 0
         while num < len(self.chords):
-            self.printAllVoices()
-            print(sopranoBlacklist)
-            print(altoBlacklist)
             chord = self.chords[num]
             backtrack = False
 
@@ -308,8 +305,6 @@ class PartWriter:
 
             while True:
                 backtrack = False
-                print(allNotes[i:i+2])
-                print(allNotes[j:j+2])
 
                 # check j
                 if not self.isParallel5thOctave("soprano", ["bass"], num-1, j) and not self.isVoiceCrossing("soprano", num-1, j):
@@ -363,7 +358,7 @@ class PartWriter:
 
                 if i > sopranoRange[0]:
                     i -= 2
-                if j < sopranoRange[1]:
+                if j < sopranoRange[1] + 2:
                     j += 2
                 if i <= sopranoRange[0] and j >= sopranoRange[1]:
                     sopranoBlacklist.append(self.sopranoLine[-1][0:1])
@@ -372,7 +367,7 @@ class PartWriter:
                     del self.sopranoLine[-1]
                     del self.tenorLine[-1]
                     backtrack = True
-                    print("backtrack: " + str(altoBlacklist) + " " + str(sopranoBlacklist) + " soprano " + str(num))
+                    # print("backtrack: " + str(altoBlacklist) + " " + str(sopranoBlacklist) + " soprano " + str(num))
                     num -= 1
                     break
 
@@ -450,7 +445,7 @@ class PartWriter:
                 # keep pointers within range
                 if i > altoRange[0]:
                     i -= 2
-                if j < altoRange[1]:
+                if j < altoRange[1] + 2:
                     j += 2
 
                 # use backups if neccessary, prioritizing the fifth over the third
@@ -472,7 +467,7 @@ class PartWriter:
                         sopranoBlacklist.append(self.sopranoLine[-1][0:1])
                         del self.sopranoLine[-1]
                         backtrack = True
-                        print("backtrack: " + str(sopranoBlacklist) + " " + str(altoBlacklist) + " alto " + str(num))
+                        # print("backtrack: " + str(sopranoBlacklist) + " " + str(altoBlacklist) + " alto " + str(num))
                         break
 
             if backtrack: # this will proceed to re-write the soprano in this beat
@@ -560,7 +555,7 @@ class PartWriter:
                 # keep pointers within range
                 if i > tenorRange[0]:
                     i -= 2
-                if j < tenorRange[1]:
+                if j < tenorRange[1] + 2:
                     j += 2
 
                 # use backups if neccessary, prioritizing the fifth over the third
@@ -587,7 +582,7 @@ class PartWriter:
                         altoBlacklist.append(self.altoLine[-1][0:1])
                         del self.altoLine[-1]
                         del self.sopranoLine[-1]
-                        print("backtrack: " + str(altoBlacklist) + " " + str(sopranoBlacklist) + " tenor " + str(num))
+                        # print("backtrack: " + str(altoBlacklist) + " " + str(sopranoBlacklist) + " tenor " + str(num))
                         break
 
     def printChords(self):
@@ -683,7 +678,7 @@ class PartWriter:
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I ii IV V")
+    PartWriterImpl = PartWriter("C", "I ii IV V I vi V I")
     PartWriterImpl.main()
 
 # edge cases: 
