@@ -50,9 +50,9 @@ minorChordMap = {
     "VII": 7
 }
 
-allNotes = "F2G2A2B2C3D3E3F3G3A3B3C4D4E4F4G4A4B4C5D5E5F5G5A5B5C6"
+allNotes = "E2F2G2A2B2C3D3E3F3G3A3B3C4D4E4F4G4A4B4C5D5E5F5G5A5B5C6"
 
-bassRange = [allNotes.index("F2"), allNotes.index("G3")]
-tenorRange = [allNotes.index("C3"), allNotes.index("G4")]
-altoRange = [allNotes.index("F3"), allNotes.index("C5")]
-sopranoRange = [allNotes.index("C4"), allNotes.index("G5")]
+bassRange = [0, allNotes.index("E4")]
+tenorRange = [allNotes.index("C3"), allNotes.index("F4")]
+altoRange = [allNotes.index("F3"), allNotes.index("D5")]
+sopranoRange = [allNotes.index("C4"), allNotes.index("C6")]

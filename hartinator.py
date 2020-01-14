@@ -8,7 +8,8 @@ from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, 
 from chord import Chord
 
 import os
-# import pygame
+import pygame
+from random_words import RandomWords
 
 class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
@@ -628,11 +629,7 @@ class PartWriter:
             else:
                 bassNotes += " "
 
-        try:
-            from random_word import RandomWords
-            self.fileName = RandomWords().get_random_word(includePartOfSpeech = "noun", maxLength = 6) + ".ly"
-        except Exception:
-            self.fileName = "banana.ly"
+        self.fileName = RandomWords().random_word('s') + ".ly"
 
         fout = open(self.fileName, "w")
 
@@ -661,17 +658,16 @@ class PartWriter:
         print("Look for a file named \'" + self.fileName + "\'!")
         if createMidiFile:
             fout = open(self.fileName, "w")
-            newFileString = fileString[0:fileString.index("score") + 8] + "\\midi {} " + fileString[fileString.index("score") + 8:-1] + fileString[-1]
+            newFileString = fileString[0:fileString.index("score") + 8] + "\\midi { \\tempo 4 = 72 } " + fileString[fileString.index("score") + 8:-1] + fileString[-1]
             fout.write(newFileString)
             fout.close()
             os.system("lilypond " + self.fileName)
             print("The midi file will also have the same name!")
 
-    # def playMidiFile(self):
-    #     midiFileName = self.fileName[0:-3] + ".midi"
-    #     pygame.init()
-    #     pygame.music.mixer.load(midiFileName)
-    #     pygame.music.mixer.play()
+    def playMidiFile(self):
+        midiFileName = self.fileName[0:-3] + ".midi"
+
+        os.system("open -a GarageBand " + midiFileName)
 
     def main(self):
         if self.key == None:
@@ -684,10 +680,10 @@ class PartWriter:
         self.printAllVoices()
         self.printAllVoicesWithAccidentals()
         self.createSheetMusicPdf(True)
-        # self.playMidiFile()
+        self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I")
+    PartWriterImpl = PartWriter("C", "I ii IV V")
     PartWriterImpl.main()
 
 # edge cases: 
