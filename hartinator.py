@@ -243,10 +243,27 @@ class PartWriter:
 
         return False
 
-    def isSpacingValid(self, voice, voices, num):
-        for v in voices:
-            return v # NEED TO DO
+    def isSpacingValid(self, voice, num, newNoteIndex):
+        if voice == "soprano":
+            if len(self.altoLine) > num:
+                if newNoteIndex > allNotes.index(self.altoLine[num]) + 14:
+                    return False
 
+        if voice == "alto":
+            if len(self.sopranoLine) > num:
+                if newNoteIndex > allNotes.index(self.sopranoLine[num]) + 14:
+                    return False
+            if len(self.tenorLine) > num:
+                if newNoteIndex > allNotes.index(self.tenorLine[num]) + 14:
+                    return False
+        
+        if voice == "tenor":
+            if len(self.altoLine) > num:
+                if newNoteIndex > allNotes.index(self.altoLine[num]) + 14:
+                    return False
+
+        return True
+        
     def writeBassLine(self):
         # good starting note
         lastNoteIndex = allNotes.index("C3")
@@ -307,7 +324,7 @@ class PartWriter:
                 backtrack = False
 
                 # check j
-                if not self.isParallel5thOctave("soprano", ["bass"], num-1, j) and not self.isVoiceCrossing("soprano", num-1, j):
+                if not self.isParallel5thOctave("soprano", ["bass"], num-1, j) and not self.isVoiceCrossing("soprano", num-1, j) and self.isSpacingValid("soprano", num, j):
 
                     if allNotes[j] == chord.root[0:1] and lookingFor[0] == True and not allNotes[j] in sopranoBlacklist:
                         self.sopranoLine.append(allNotes[j:j+2])
@@ -332,7 +349,7 @@ class PartWriter:
                         break
 
                 # check i
-                if not self.isParallel5thOctave("soprano", ["bass"], num-1, i) and not self.isVoiceCrossing("soprano", num-1, i):
+                if not self.isParallel5thOctave("soprano", ["bass"], num-1, i) and not self.isVoiceCrossing("soprano", num-1, i) and self.isSpacingValid("soprano", num, i):
 
                     if allNotes[i] == chord.root[0:1] and lookingFor[0] == True and not allNotes[i] in sopranoBlacklist:
                         self.sopranoLine.append(allNotes[i:i+2])
@@ -382,7 +399,7 @@ class PartWriter:
                 backtrack = False
 
                 # check j
-                if not self.isVoiceCrossing("alto", num-1, j) and not self.isParallel5thOctave("alto", ["soprano", "bass"], num-1, j):
+                if not self.isVoiceCrossing("alto", num-1, j) and not self.isParallel5thOctave("alto", ["soprano", "bass"], num-1, j) and self.isSpacingValid("alto", num, j):
 
                     if allNotes[j] == chord.root[0:1] and lookingFor[0] == True and not allNotes[j] in altoBlacklist:
                         self.altoLine.append(allNotes[j:j+2])
@@ -413,7 +430,7 @@ class PartWriter:
                             backUpThird = allNotes[j:j+2]
 
                 # check i
-                if not self.isVoiceCrossing("alto", num-1, i) and not self.isParallel5thOctave("alto", ["soprano", "bass"], num-1, i):
+                if not self.isVoiceCrossing("alto", num-1, i) and not self.isParallel5thOctave("alto", ["soprano", "bass"], num-1, i) and self.isSpacingValid("alto", num, i):
 
                     if allNotes[i] == chord.root[0:1] and lookingFor[0] == True and not allNotes[i] in altoBlacklist:
                         self.altoLine.append(allNotes[i:i+2])
@@ -482,7 +499,7 @@ class PartWriter:
                 backtrack = False
 
                 # check i
-                if not self.isVoiceCrossing("tenor", num-1, i) and not self.isParallel5thOctave("tenor", ["alto", "bass", "soprano"], num-1, i):
+                if not self.isVoiceCrossing("tenor", num-1, i) and not self.isParallel5thOctave("tenor", ["alto", "bass", "soprano"], num-1, i) and self.isSpacingValid("tenor", num, i):
 
                     if allNotes[i] == chord.root[0:1] and lookingFor[0] == True:
                         self.tenorLine.append(allNotes[i:i+2])
@@ -514,7 +531,7 @@ class PartWriter:
                         break
 
                 # check j
-                if not self.isVoiceCrossing("tenor", num-1, j) and not self.isParallel5thOctave("tenor", ["alto", "bass", "soprano"], num-1, j):
+                if not self.isVoiceCrossing("tenor", num-1, j) and not self.isParallel5thOctave("tenor", ["alto", "bass", "soprano"], num-1, j) and self.isSpacingValid("tenor", num, j):
 
                     if allNotes[j] == chord.root[0:1] and lookingFor[0] == True:
                         self.tenorLine.append(allNotes[j:j+2])
@@ -678,7 +695,7 @@ class PartWriter:
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I ii IV V I vi V I")
+    PartWriterImpl = PartWriter("C", "I IV V vi I ii iii V I iii V I")
     PartWriterImpl.main()
 
 # edge cases: 
