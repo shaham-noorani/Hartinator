@@ -1,6 +1,7 @@
 # add flat keys (only minor left)
 # add functionality for different amount of parts and optional starting notes
 # back track before doubling third or fifth
+# make the blacklist a matrix
 
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
