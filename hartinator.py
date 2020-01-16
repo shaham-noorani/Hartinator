@@ -1,7 +1,5 @@
 # add flat keys (only minor left)
 # add functionality for different amount of parts and optional starting notes
-# BACKBURNER be able to play the music
-# BACKBURNER produce sheet music
 # back track before doubling third or fifth
 
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
@@ -606,40 +604,32 @@ class PartWriter:
         for chord in self.chords:
             print(chord.root + " " + chord.third + " " + chord.fifth)
 
+    def addOctaveForLilypond(self, note):
+        result = ""
+        result += note[0]
+        if '2' in note:
+            result += ","
+        elif '4' in note:
+            result += "\'"
+        elif '5' in note:
+            result += "\'\'"
+        if "#" in note:
+                result += "is"
+        elif "b" in note:
+            result += "es"
+        return result + " "
+
     def createSheetMusicPdf(self, createMidiFile):
         sopranoNotes, altoNotes, tenorNotes, bassNotes = "", "", "", ""
+
         for i in self.sopranoLineWithAccidentals:
-            sopranoNotes += i[0]
-            if "#" in i:
-                sopranoNotes += "is "
-            elif "b" in i:
-                sopranoNotes += "es "
-            else:
-                sopranoNotes += " "
+            sopranoNotes += self.addOctaveForLilypond(i)
         for i in self.altoLineWithAccidentals:
-            altoNotes += i[0]
-            if "#" in i:
-                altoNotes += "is "
-            elif "b" in i:
-                altoNotes += "es "
-            else:
-                altoNotes += " "
+            altoNotes += self.addOctaveForLilypond(i)
         for i in self.tenorLineWithAccidentals:
-            tenorNotes += i[0]
-            if "#" in i:
-                tenorNotes += "is "
-            elif "b" in i:
-                tenorNotes += "es "
-            else:
-                tenorNotes += " "
+            tenorNotes += self.addOctaveForLilypond(i)
         for i in self.bassLineWithAccidentals:
-            bassNotes += i[0]
-            if "#" in i:
-                bassNotes += "is "
-            elif "b" in i:
-                bassNotes += "es "
-            else:
-                bassNotes += " "
+            bassNotes += self.addOctaveForLilypond(i)
 
         self.fileName = RandomWords().random_word('s') + ".ly"
 
@@ -653,10 +643,10 @@ class PartWriter:
         fileString = ""
 
         fileString += "global = { \\key " + self.key.lower() + " " + quality + " }" 
-        fileString += "sopMusic = \\relative c\'\' { " + sopranoNotes.lower() + "}"
-        fileString += "altoMusic = \\relative c\' { " + altoNotes.lower() + "}"
-        fileString += "tenorMusic = \\relative c\' { " + tenorNotes.lower() + "}"
-        fileString += "bassMusic = \\relative c { " + bassNotes.lower() + "}"
+        fileString += "sopMusic = \\absolute { " + sopranoNotes.lower() + "}"
+        fileString += "altoMusic = \\absolute { " + altoNotes.lower() + "}"
+        fileString += "tenorMusic = \\absolute { " + tenorNotes.lower() + "}"
+        fileString += "bassMusic = \\absolute { " + bassNotes.lower() + "}"
         fileString += "\\score { \\new ChoirStaff <<\\new Staff = \"women\" << \\new Voice = \"sopranos\" { \\voiceOne << \\global \\sopMusic >> }"
         fileString += "\\new Voice = \"altos\" { \\voiceTwo << \\global \\altoMusic >> } >>"
         fileString += "\\new Staff = \"men\" << \\clef bass \\new Voice = \"tenors\" { \\voiceOne << \\global \\tenorMusic >> }"
@@ -692,7 +682,7 @@ class PartWriter:
         self.printAllVoices()
         self.printAllVoicesWithAccidentals()
         self.createSheetMusicPdf(True)
-        self.playMidiFile()
+        # self.playMidiFile()
 
 if __name__ == "__main__":
     PartWriterImpl = PartWriter("C", "I IV V vi I ii iii V I iii V I")
