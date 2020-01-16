@@ -474,7 +474,7 @@ class PartWriter:
                     elif backUpThird != "":
                         self.altoLine.append(backUpThird)
                         counts[1] += 1
-                        print("doubled 3rd in alto on beat" + str(num+1))
+                        print("doubled 3rd in alto on beat " + str(num+1))
                         altoBlacklist = []
                         break
                     else:
@@ -510,23 +510,29 @@ class PartWriter:
                         num += 1
                         break
 
-                    if allNotes[i] == chord.fifth[0:1] and lookingFor[2] == True:
-                        self.tenorLine.append(allNotes[i:i+2])
-                        lookingFor[2] = False
-                        counts[2] += 1
-                        lastTenor = i
-                        altoBlacklist, sopranoBlacklist = [], []
-                        num += 1
-                        break
+                    if allNotes[i] == chord.fifth[0:1]:
+                        if lookingFor[2] == True:
+                            self.tenorLine.append(allNotes[i:i+2])
+                            lookingFor[2] = False
+                            counts[2] += 1
+                            lastTenor = i
+                            altoBlacklist, sopranoBlacklist = [], []
+                            num += 1
+                            break
+                        elif not backUpFifth:
+                            backUpFifth = allNotes[j:j+2]
 
-                    if allNotes[i] == chord.third[0:1] and lookingFor[1] == True:
-                        self.tenorLine.append(allNotes[i:i+2])
-                        lookingFor[1] = False
-                        counts[1] += 1
-                        lastTenor = i
-                        altoBlacklist, sopranoBlacklist = [], []
-                        num += 1
-                        break
+                    if allNotes[i] == chord.third[0:1]:
+                        if lookingFor[1] == True:
+                            self.tenorLine.append(allNotes[i:i+2])
+                            lookingFor[1] = False
+                            counts[1] += 1
+                            lastTenor = i
+                            altoBlacklist, sopranoBlacklist = [], []
+                            num += 1
+                            break
+                        elif not backUpThird:
+                            backUpThird = allNotes[j:j+2]
 
                 # check j
                 if not self.isVoiceCrossing("tenor", num-1, j) and not self.isParallel5thOctave("tenor", ["alto", "bass", "soprano"], num-1, j) and self.isSpacingValid("tenor", num, j):
@@ -607,16 +613,16 @@ class PartWriter:
     def addOctaveForLilypond(self, note):
         result = ""
         result += note[0]
+        if "#" in note:
+                result += "is"
+        elif "b" in note:
+            result += "es"
         if '2' in note:
             result += ","
         elif '4' in note:
             result += "\'"
         elif '5' in note:
             result += "\'\'"
-        if "#" in note:
-                result += "is"
-        elif "b" in note:
-            result += "es"
         return result + " "
 
     def createSheetMusicPdf(self, createMidiFile):
@@ -631,7 +637,7 @@ class PartWriter:
         for i in self.bassLineWithAccidentals:
             bassNotes += self.addOctaveForLilypond(i)
 
-        self.fileName = RandomWords().random_word('s') + ".ly"
+        self.fileName = RandomWords().random_word() + ".ly"
 
         fout = open(self.fileName, "w")
 
@@ -679,13 +685,16 @@ class PartWriter:
         self.printChords()
         self.writeBassLine()
         self.writeAltoTenorAndSoprano()
+        print()
         self.printAllVoices()
+        print()
+        print("With accidentals: ")
         self.printAllVoicesWithAccidentals()
         self.createSheetMusicPdf(True)
-        # self.playMidiFile()
+        self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I IV V vi I ii iii V I iii V I")
+    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I")
     PartWriterImpl.main()
 
 # edge cases: 
