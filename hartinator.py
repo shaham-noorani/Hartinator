@@ -2,6 +2,7 @@
 # add functionality for different amount of parts and optional starting notes
 # back track before doubling third or fifth
 # make the blacklist a matrix
+# if back track for a certain beat is 2 or 3 len then add 3rd or 5th
 
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
@@ -640,7 +641,7 @@ class PartWriter:
 
         self.fileName = RandomWords().random_word() + ".ly"
 
-        fout = open(self.fileName, "w")
+        fout = open("artifacts/" + self.fileName, "w")
 
         if self.key in majorKeys:
             quality = "\\major"
@@ -662,15 +663,15 @@ class PartWriter:
         fout.write(fileString)
         fout.close()
 
-        os.system("lilypond " + self.fileName)
-        os.system("open " + self.fileName[0:-3] + ".pdf")
+        os.system("lilypond --include /artifacts -o /artifacts " + self.fileName)
+        os.system("open artifacts/" + self.fileName[0:-3] + ".pdf")
         print("Look for a file named \'" + self.fileName + "\'!")
         if createMidiFile:
-            fout = open(self.fileName, "w")
+            fout = open("artifacts/" + self.fileName, "w")
             newFileString = fileString[0:fileString.index("score") + 8] + "\\midi { \\tempo 4 = 72 } " + fileString[fileString.index("score") + 8:-1] + fileString[-1]
             fout.write(newFileString)
             fout.close()
-            os.system("lilypond " + self.fileName)
+            os.system("lilypond --include /artifacts -o /artifacts" + self.fileName)
             print("The midi file will also have the same name!")
 
     def playMidiFile(self):
@@ -695,7 +696,7 @@ class PartWriter:
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I")
+    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I")
     PartWriterImpl.main()
 
 # edge cases: 
