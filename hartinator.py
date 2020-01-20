@@ -824,7 +824,7 @@ class PartWriter:
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("a", "i v VII v VI iv v v i iv VI v i VII v i")
+    PartWriterImpl = PartWriter("C", "I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I")
     PartWriterImpl.main()
 
 # edge cases: 
