@@ -2,8 +2,14 @@ from constants import majorChordMap, minorChordMap, minorKeys, majorKeys
 
 class Chord:
     def __init__(self, romanNumeral, key):
+        if len(romanNumeral) == 1 or (len(romanNumeral) == 2 and not "6" in romanNumeral):
+            romanNumeralWithoutInversion = romanNumeral
+        elif (len(romanNumeral) == 2 and "6" in romanNumeral) or (len(romanNumeral) == 3 and "64" in romanNumeral):
+            romanNumeralWithoutInversion = romanNumeral[0:1]
+        else:
+            romanNumeralWithoutInversion = romanNumeral[0:2]
         if key in majorKeys:
-            chordAsScaleDegree = majorChordMap[romanNumeral]
+            chordAsScaleDegree = majorChordMap[romanNumeralWithoutInversion]
             self.root = majorKeys[key][chordAsScaleDegree - 1]
             if chordAsScaleDegree >= 6:
                 self.third = majorKeys[key][chordAsScaleDegree-1 + 2 - 7]
@@ -15,7 +21,7 @@ class Chord:
                 self.third = majorKeys[key][chordAsScaleDegree-1 + 2]
                 self.fifth = majorKeys[key][chordAsScaleDegree-1 + 4]
         if key in minorKeys:
-            chordAsScaleDegree = minorChordMap[romanNumeral]
+            chordAsScaleDegree = minorChordMap[romanNumeralWithoutInversion]
             self.root = minorKeys[key][chordAsScaleDegree - 1]
             if chordAsScaleDegree >= 6:
                 self.third = minorKeys[key][chordAsScaleDegree-1 + 2 - 7]
@@ -26,3 +32,16 @@ class Chord:
             else:
                 self.third = minorKeys[key][chordAsScaleDegree-1 + 2]
                 self.fifth = minorKeys[key][chordAsScaleDegree-1 + 4]
+        if "64" in romanNumeral:
+            oldRoot = self.root
+            oldThird = self.third
+            self.root = self.fifth
+            self.third = oldRoot
+            self.fifth = oldThird
+        elif "6" in romanNumeral:
+            oldRoot = self.root
+            oldThird = self.third
+            oldFifth = self.fifth
+            self.root = oldThird
+            self.third = oldFifth
+            self.fifth = oldRoot
