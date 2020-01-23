@@ -13,8 +13,7 @@ majorKeys = {
     "Ab": ["Ab", "Bb", "C", "Db", "Eb", "F", "G"],
     "Db": ["Db", "Eb", "F", "Gb", "Ab", "Bb", "C"],
     "Gb": ["Gb", "Ab", "Bb", "Cb", "Db", "Eb", "F"],
-    "Cb": ["Cb", "Db", "Eb", "F", "Gb", "Ab", "Bb"],
-    "Fb": ["Fb", "Gb", "Ab", "Bb", "Cb", "Db", "Eb"],
+    "Cb": ["Cb", "Db", "Eb", "Fb", "Gb", "Ab", "Bb"],
 }
 
 minorKeys = {

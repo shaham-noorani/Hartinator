@@ -1,5 +1,5 @@
 # add flat keys (only minor left)
-# add functionality for different amount of parts and optional starting notes
+# correct doubling with inversions
 
 from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys
 from chord import Chord
@@ -354,7 +354,7 @@ class PartWriter:
 
             possibleValues = list(dict.fromkeys(possibleValues))
             for n in possibleValues:
-                self.writeLine(beat, "alto", [self.sopranoLine, self.altoLine, self.tenorLine, self.bassLine], n)
+                self.writeLine(beat, "alto", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
 
         if voice == "alto":
             self.sopranoLine[beat] = note
@@ -391,10 +391,8 @@ class PartWriter:
                 count += 1
 
             possibleValues = list(dict.fromkeys(possibleValues))
-            if backupThird and counts[1] != 0 and counts[2] != 0:
-                possibleValues.append(backupThird)
             for n in possibleValues:
-                self.writeLine(beat, "tenor", [self.sopranoLine, self.altoLine, self.tenorLine, self.bassLine], n)
+                self.writeLine(beat, "tenor", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
 
         if voice == "tenor":
             self.altoLine[beat] = note
@@ -438,10 +436,10 @@ class PartWriter:
             for n in possibleValues:
                 if n[0] == chord.fifth and counts[1] == 0:
                     None
-                elif n[0] == chord.root and not (0 in [counts[0], counts[1]]):
+                elif n[0] == chord.root and (0 in [counts[0], counts[1]]):
                     None
                 elif beat < len(self.chords) - 1:
-                    self.writeLine(beat + 1, "soprano", [self.sopranoLine, self.altoLine, self.tenorLine, self.bassLine], n)
+                    self.writeLine(beat + 1, "soprano", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
                 else:
                     self.tenorLine[beat] = n
 
@@ -453,7 +451,7 @@ class PartWriter:
         result = ""
         result += note[0]
         if "#" in note:
-                result += "is"
+            result += "is"
         elif "b" in note:
             result += "es"
         if '2' in note:
@@ -484,10 +482,15 @@ class PartWriter:
             quality = "\\major"
         else:
             quality = "\\minor"
+        keyAccidental = ""
+        if "#" in self.key:
+            keyAccidental = "is"
+        if "b" in self.key:
+            keyAccidental = "es"
 
         fileString = ""
 
-        fileString += "global = { \\key " + self.key.lower() + " " + quality + " }" 
+        fileString += "global = { \\key " + self.key.lower()[0] + keyAccidental + " " + quality + " }" 
         fileString += "sopMusic = \\absolute { " + sopranoNotes.lower() + "}"
         fileString += "altoMusic = \\absolute { " + altoNotes.lower() + "}"
         fileString += "tenorMusic = \\absolute { " + tenorNotes.lower() + "}"
@@ -512,7 +515,6 @@ class PartWriter:
         fout.write(newFileString)
         fout.close()
         os.system("lilypond --include /artifacts -o /artifacts " + self.fileName)
-        print("The midi file will also have the same name!")
         os.system("open -a GarageBand artifacts/" + midiFileName)
 
     def main(self):
@@ -526,13 +528,13 @@ class PartWriter:
         print()
         self.printAllVoices()
         print()
-        print("With accidentals: ")
+        # print("With accidentals: ")
         self.printAllVoicesWithAccidentals()
         self.createSheetMusicPdf()
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I IV vi V64 I IV V I")
+    PartWriterImpl = PartWriter("C", "I6 IV vi V6 I IV V6 I ii IV V6 vii vi64 vi ii V6 I IV vi IV64 vii vi6 V I")
     PartWriterImpl.main()
 
 # edge cases: 
@@ -541,10 +543,3 @@ if __name__ == "__main__":
 
 # meme cases
 #I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I
-
-
-# IV - V
-# D5 C5
-# B4 A4
-# B3 C3
-# G3 A3
