@@ -74,7 +74,7 @@ class PartWriter:
                     return False
         return True
 
-    def isParallel5thOctave(self, voice, beat, newNoteIndex): #figure out how to add keys to a map and if you can use a str var as a key
+    def isParallel5thOctave(self, voice, beat, newNoteIndex): 
         if beat < 0:
             return False
         
@@ -415,10 +415,6 @@ class PartWriter:
 if __name__ == "__main__":
     PartWriterImpl = PartWriter("C", "I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I")
     PartWriterImpl.main()
-
-# edge cases: 
-# I ii IV V key = C
-# I IV vi V I IV V I
 
 # meme cases
 #I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I
