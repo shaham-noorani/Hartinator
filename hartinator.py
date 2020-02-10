@@ -329,8 +329,7 @@ class PartWriter:
             print(chord.root + " " + chord.third + " " + chord.fifth)
 
     def addOctaveForLilypond(self, note):
-        result = ""
-        result += note[0]
+        result = note[0]
         if "#" in note:
             result += "is"
         elif "b" in note:
