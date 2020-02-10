@@ -53,6 +53,8 @@ minorChordMap = {
 
 allNotes = "F2G2A2B2C3D3E3F3G3A3B3C4D4E4F4G4A4B4C5D5E5F5G5A5B5C6"
 
+voicesInOrder = ["soprano", "alto", "tenor", "bass"]
+
 bassRange = [0, allNotes.index("A3")]
 tenorRange = [allNotes.index("C3"), allNotes.index("E4")]
 altoRange = [allNotes.index("B3"), allNotes.index("D5")]
