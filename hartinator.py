@@ -111,8 +111,6 @@ class PartWriter:
         # define prior notes dict to be compared to later
         for i in voicesInOrder:
             priorNoteIndexes[i] = allNotes.index(self.voices[i][beat])
-        
-        print(priorNoteIndexes)
 
         if voice == "soprano" and priorNoteIndexes["alto"]:
             if newNoteIndex < priorNoteIndexes["alto"]:
@@ -198,15 +196,10 @@ class PartWriter:
                 if i <= bassRange[0] and j >= bassRange[1]:
                     break
 
-    def writeLine(self, beat, voice, allVoices, note=""):
+    def writeLine(self, beat, voice, note=""):
         # this will properly unwind all of the pointless recursions
         if not "" in self.tenorLine:
             return
-
-        self.sopranoLine = allVoices[0]
-        self.altoLine = allVoices[1]
-        self.tenorLine = allVoices[2]
-        self.bassLine = allVoices[3]
         
         chord = self.chords[beat]
         possibleNotes = []
@@ -216,7 +209,7 @@ class PartWriter:
         if voice == "soprano":
             i, j = allNotes.index("C5"), allNotes.index("C5")
             if beat != 0:
-                i, j = allNotes.index(self.sopranoLine[beat-1]), allNotes.index(self.sopranoLine[beat-1])
+                i, j = allNotes.index(self.voices["soprano"][beat-1]), allNotes.index(self.voices["soprano"][beat-1])
                 self.tenorLine[beat-1] = note
             count = 0
             self.updateChordMemberFrequency(counts, beat, chord)
@@ -235,13 +228,14 @@ class PartWriter:
 
             possibleNotes = list(dict.fromkeys(possibleNotes))
             for n in possibleNotes:
-                self.writeLine(beat, "alto", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
+                self.updateVoicesDictionary()
+                self.writeLine(beat, "alto", n)
 
         if voice == "alto":
             self.sopranoLine[beat] = note
             i, j = allNotes.index("E4"), allNotes.index("E4")
             if beat != 0:
-                i, j = allNotes.index(self.altoLine[beat-1]), allNotes.index(self.altoLine[beat-1])
+                i, j = allNotes.index(self.voices["alto"][beat-1]), allNotes.index(self.voices["alto"][beat-1])
             count = 0
             self.updateChordMemberFrequency(counts, beat, chord)
             while count < 4:
@@ -273,13 +267,14 @@ class PartWriter:
 
             possibleNotes = list(dict.fromkeys(possibleNotes))
             for n in possibleNotes:
-                self.writeLine(beat, "tenor", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
+                self.updateVoicesDictionary()
+                self.writeLine(beat, "tenor", n)
 
         if voice == "tenor":
             self.altoLine[beat] = note
             i, j = allNotes.index("A3"), allNotes.index("A3")
             if beat != 0:
-                i, j = allNotes.index(self.tenorLine[beat-1]), allNotes.index(self.tenorLine[beat-1])
+                i, j = allNotes.index(self.voices["tenor"][beat-1]), allNotes.index(self.voices["tenor"][beat-1])
             count = 0
             self.updateChordMemberFrequency(counts, beat, chord)
             while count < 4:
@@ -320,9 +315,10 @@ class PartWriter:
                 elif n[0] == chord.root and (0 in [counts[0], counts[1]]):
                     None
                 elif beat < len(self.chords) - 1:
-                    self.writeLine(beat + 1, "soprano", [self.sopranoLine.copy(), self.altoLine.copy(), self.tenorLine.copy(), self.bassLine.copy()], n)
+                    self.updateVoicesDictionary()
+                    self.writeLine(beat + 1, "soprano", n)
                 else:
-                    self.tenorLine[beat] = n
+                    self.voices["tenor"][beat] = n
 
     def printChords(self):
         for chord in self.chords:

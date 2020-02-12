@@ -2,12 +2,14 @@ from constants import majorChordMap, minorChordMap, minorKeys, majorKeys
 
 class Chord:
     def __init__(self, romanNumeral, key):
-        if len(romanNumeral) == 1 or (len(romanNumeral) == 2 and not "6" in romanNumeral):
+        if len(romanNumeral) == 1 or ((len(romanNumeral) == 2 or len(romanNumeral) == 3) and not "6" in romanNumeral):
             romanNumeralWithoutInversion = romanNumeral
         elif (len(romanNumeral) == 2 and "6" in romanNumeral) or (len(romanNumeral) == 3 and "64" in romanNumeral):
             romanNumeralWithoutInversion = romanNumeral[0:1]
-        else:
+        elif (len(romanNumeral) == 3 and "6" in romanNumeral) or (len(romanNumeral) == 4 and "64" in romanNumeral):
             romanNumeralWithoutInversion = romanNumeral[0:2]
+        else:
+            romanNumeralWithoutInversion = romanNumeral[0:3]
         if key in majorKeys:
             chordAsScaleDegree = majorChordMap[romanNumeralWithoutInversion]
             self.root = majorKeys[key][chordAsScaleDegree - 1]
