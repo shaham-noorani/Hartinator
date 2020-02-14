@@ -59,3 +59,17 @@ bassRange = [0, allNotes.index("A3")]
 tenorRange = [allNotes.index("C3"), allNotes.index("E4")]
 altoRange = [allNotes.index("B3"), allNotes.index("D5")]
 sopranoRange = [allNotes.index("F4"), allNotes.index("F5")]
+
+ranges = {
+    "soprano": [allNotes.index("F4"), allNotes.index("F5")], 
+    "alto": [allNotes.index("B3"), allNotes.index("D5")], 
+    "tenor": [allNotes.index("C3"), allNotes.index("E4")], 
+    "bass": [0, allNotes.index("A3")]
+}
+
+goodStartingNotes = {
+    "soprano": "C5",
+    "alto": "E4",
+    "tenor": "A3",
+    "bass": "C3"
+}
