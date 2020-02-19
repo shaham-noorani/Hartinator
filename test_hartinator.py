@@ -6,28 +6,35 @@ from constants import allNotes
 class TestPartWriter(unittest.TestCase):
     def testVoiceCrossing(self):
         testObject = PartWriter("C", "I V I")
-        testObject.bassLine = ["C3", "G3", "C4"]
-        testObject.tenorLine = ["E3", "G3", "E3"]
-        newNoteIndex = allNotes.index(testObject.tenorLine[2])
-        del testObject.tenorLine[-1]
-        self.assertTrue(testObject.isVoiceCrossing("tenor", 1, newNoteIndex))
+        testObject.voices["bass"] = ["C3", "G3", "C4", "D4"]
+        testObject.voices["tenor"] = ["E3", "G3", "E3"]
+        newNoteIndex = allNotes.index("F3")
+        self.assertTrue(testObject.isVoiceCrossing("tenor", 2, newNoteIndex))
 
     def testIsParallelFifthOctave(self):
         testObject = PartWriter("C", "I V")
-        testObject.sopranoLine = ["D5", "A5"]
-        testObject.altoLine = ["B4", "C5"]
-        testObject.tenorLine = ["B3", "E4"]
-        testObject.bassLine = ["G3", "A3"]
-        newNoteIndex = allNotes.index(testObject.sopranoLine[1])
-        self.assertFalse(testObject.isParallel5thOctave("soprano", ["bass, tenor, alto"], 1, newNoteIndex))
-        newNoteIndex = allNotes.index(testObject.altoLine[1])
-        self.assertFalse(testObject.isParallel5thOctave("alto", ["bass, tenor, soprano"], 1, newNoteIndex))
-        newNoteIndex = allNotes.index(testObject.tenorLine[1])
-        self.assertFalse(testObject.isParallel5thOctave("tenor", ["bass, bass, alto"], 1, newNoteIndex))
-        # D5 A5
-        # B4 C5
-        # B3 E4
-        # G3 A3
+        testObject.voices["soprano"] = ["D5", "C5"]
+        testObject.voices["alto"] = ["G4"] # F4
+        testObject.voices["tenor"] = ["C3"] # C3
+        testObject.voices["bass"] = ["C2", "C2"]
+        self.assertTrue(testObject.isParallel5thOctave("alto", 1, allNotes.index("F4")))
+        self.assertFalse(testObject.isParallel5thOctave("tenor", 1, allNotes.index("C3")))
+
+    def testIs7thResolved(self):
+        testObject = PartWriter("C", "I V")
+        testObject.voices["soprano"] = ["B4"]
+        testObject.voices["bass"] = ["B3"]
+        self.assertTrue(testObject.is7thResolved("soprano", 1, allNotes.index("C5")))
+        self.assertFalse(testObject.is7thResolved("bass", 1, allNotes.index("A3")))
+
+    def testIsSpacingValid(self):
+        testObject = PartWriter("C", "I V")
+        testObject.voices["soprano"] = ["C5"] # F4
+        testObject.voices["alto"] = ["B3"] # F4
+        testObject.voices["tenor"] = ["G3"] # C3
+        self.assertFalse(testObject.isSpacingValid("alto", 0, allNotes.index("B3")))
+        self.assertTrue(testObject.isSpacingValid("tenor", 0, allNotes.index("G3")))
+
 
 if __name__ == '__main__':
     unittest.main()
