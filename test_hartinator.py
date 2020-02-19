@@ -35,6 +35,14 @@ class TestPartWriter(unittest.TestCase):
         self.assertFalse(testObject.isSpacingValid("alto", 0, allNotes.index("B3")))
         self.assertTrue(testObject.isSpacingValid("tenor", 0, allNotes.index("G3")))
 
+    def testFollowsVoiceLeading(self):
+        testObject = PartWriter("A", "I")
+        testObject.voices["soprano"] = ['C5', 'C5', 'D5', 'D5', 'E5', 'D5', 'A4', 'B4', '', '', '', '', '', '', '', '']
+        testObject.voices["alto"] = ['E4', 'F4', 'F4', 'F4', 'G4', 'G4', 'E4', 'E4', '', '', '', '', '', '', '', '']
+        testObject.voices["tenor"] = ['A3', 'A3', 'A3', 'B3', 'B3', 'B3', 'C4', '', '', '', '', '', '', '', '', '']
+        testObject.voices["bass"] = ['A2', 'F2', 'D3', 'B2', 'E3', 'G3', 'A3', 'E3', 'A3', 'D3', 'B2', 'A2', 'E3', 'E3', 'E3', 'A3']
+        self.assertTrue(testObject.followsAllVoiceLeading("tenor", 7, allNotes.index("E3")))
+
 
 if __name__ == '__main__':
     unittest.main()

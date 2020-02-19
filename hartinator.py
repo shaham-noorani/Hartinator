@@ -1,7 +1,7 @@
 # add flat keys (only minor left)
 # correct doubling with inversions
 
-from constants import allNotes, bassRange, altoRange, tenorRange, sopranoRange, majorKeys, minorKeys, voicesInOrder, goodStartingNotes, ranges
+from constants import allNotes, majorKeys, minorKeys, voicesInOrder, goodStartingNotes, ranges
 from chord import Chord
 
 import os
@@ -149,30 +149,37 @@ class PartWriter:
         newPossibleNotes = []
         for n in possibleNotes:
             if voice == "tenor":
-                if n[0] == chord.fifth and counts[1] == 0: # make sure every chord member is present
+                if n[0] == chord.fifth[0] and counts[1] == 0: # make sure every chord member is present
                     continue
-                if n[0] == chord.third and counts[2] == 0: # make sure every chord memeber is present
+                if n[0] == chord.third[0] and counts[2] == 0: # make sure every chord memeber is present
                     continue
-                if n[0] == chord.root and 0 in [counts[1], counts[2]]: # make sure every chord memeber is present
+                if n[0] == chord.root[0] and 0 in [counts[1], counts[2]]: # make sure every chord memeber is present
                     continue
-                if n[0] == chord.third and counts[1] == 1: # prevent doubled third
+                if n[0] == chord.root[0] and counts[0] == 2:
+                    continue
+                if n[0] == chord.third[0] and counts[1] == 1: # prevent doubled third
                     continue
             if voice == "alto":
-                if n[0] == chord.root and counts[0] == 2:
+                if n[0] == chord.root[0] and counts[0] == 2:
                     continue
             newPossibleNotes.append(n)
 
-        possibleNotes = newPossibleNotes
+        return newPossibleNotes
 
-    def updateChordMemberFrequency(self, counts, beat, chord):
+    def updateChordMemberFrequency(self, counts, beat, chord, voice):
+        newCounts = [0, 0, 0]
         for i in voicesInOrder:
+            if i == voice:
+                break
             curr = self.voices[i][beat][0:1]
-            if curr == chord.root:
-                counts[0] += 1
-            elif curr == chord.third:
-                counts[1] += 1
-            elif curr == chord.fifth:
-                counts[2] += 1
+            if curr == chord.root[0]:
+                newCounts[0] += 1
+            elif curr == chord.third[0]:
+                newCounts[1] += 1
+            elif curr == chord.fifth[0]:
+                newCounts[2] += 1
+        
+        return newCounts
         
     def writeBassLine(self):
         # good starting note
@@ -192,22 +199,19 @@ class PartWriter:
                     break
 
                 # keeping pointers within range
-                if i > bassRange[0]:
+                if i > ranges["bass"][0]:
                     i -= 2
-                if j < bassRange[1]:
+                if j < ranges["bass"][1]:
                     j += 2
-                if i <= bassRange[0] and j >= bassRange[1]:
+                if i <= ranges["bass"][0] and j >= ranges["bass"][1]:
                     break
 
     def writeLine(self, beat=0, voice="soprano", voices=""):
-        # this will properly unwind all of the pointless recursions
         self.printAllVoices()
+        print()
         if voices:
             self.voices = voices
 
-        if not "" in self.voices["tenor"]:
-            return
-        
         chord = self.chords[beat]
         possibleNotes = []
         counts = [0, 0, 0]
@@ -218,36 +222,33 @@ class PartWriter:
             i, j = allNotes.index(self.voices[voice][beat-1]), allNotes.index(self.voices[voice][beat-1])
 
         count = 0
-        self.updateChordMemberFrequency(counts, beat, chord)
-
         while count < 4:
-            if self.followsAllVoiceLeading(voice, beat, j):
-                if allNotes[j] in [chord.root[0:1], chord.third[0:1], chord.fifth[0:1]]:
-                    possibleNotes.append(allNotes[j:j+2])
-            if self.followsAllVoiceLeading(voice, beat, i):
-                if allNotes[i] in [chord.root[0:1], chord.third[0:1], chord.fifth[0:1]]:
-                    possibleNotes.append(allNotes[i:i+2])
-            if i > ranges[voice][0]:
+            print(len(allNotes))
+            print(j)
+            if allNotes[j] in [chord.root[0], chord.third[0], chord.fifth[0]]:
+                possibleNotes.append(allNotes[j:j+2])
+            if allNotes[i] in [chord.root[0], chord.third[0], chord.fifth[0]]:
+                possibleNotes.append(allNotes[i:i+2])
+            if i > ranges[voice][0] + 2:
                 i -= 2
-            if j < ranges[voice][1]:
+            if j < ranges[voice][-1] - 2:
                 j += 2
             count += 1
 
-        possibleNotes = list(dict.fromkeys(possibleNotes)) # removes duplicates
-        self.removeBadNotes(possibleNotes, counts, voice, chord)
+        counts = self.updateChordMemberFrequency(counts, beat, chord, voice)
+        possibleNotes = self.removeBadNotes(possibleNotes, counts, voice, chord)
         for n in possibleNotes:
-            if voice != "tenor":
-                nextVoice = voicesInOrder[voicesInOrder.index(voice) + 1]
-            else:
-                nextVoice = "soprano"
-            
-            if voice == "tenor":
-                self.voices[voice][beat] = n
-                beat += 1
-            else:
-                self.voices[voice][beat] = n
-            if beat < len(self.chords):
-                self.writeLine(beat, nextVoice, self.voices)
+            if "" in self.voices["tenor"]:
+                if beat < len(self.chords):
+                    self.voices[voice][beat] = n
+                    if voice != "tenor":
+                        nextVoice = voicesInOrder[voicesInOrder.index(voice) + 1]
+                    else:
+                        nextVoice = "soprano"
+                        beat += 1
+
+                    if beat < len(self.chords):
+                        self.writeLine(beat, nextVoice, self.voices)
 
     def printChords(self):
         for chord in self.chords:
@@ -338,7 +339,7 @@ class PartWriter:
         self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("Ab", "I vi IV ii V vii I V I IV V64 I I6 I64 V I")
+    PartWriterImpl = PartWriter("F#", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I6 IV vi IV vii vi V I")
     PartWriterImpl.main()
 
 # meme cases
