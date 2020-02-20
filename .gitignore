@@ -1,6 +1,4 @@
 __pycache__/
 .gitignore
 .DS_Store
-*.ly
-*.pdf
-*.midi
+artifacts/

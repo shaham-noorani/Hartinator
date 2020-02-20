@@ -162,7 +162,22 @@ class PartWriter:
             if voice == "alto":
                 if n[0] == chord.root[0] and counts[0] == 2:
                     continue
+            if voice == "soprano" and chord.root == self.key:
+                if n[0] != chord.root[0]:
+                    continue
             newPossibleNotes.append(n)
+
+        return newPossibleNotes
+
+    def reorderPossibleNotes(self, possibleNotes, counts, voice, chord):
+        newPossibleNotes = possibleNotes
+        swapped = True
+        while swapped:
+            swapped = False
+            for i in range(len(newPossibleNotes) - 1):
+                if newPossibleNotes[i] > newPossibleNotes[i + 1]:
+                    newPossibleNotes[i], newPossibleNotes[i + 1] = newPossibleNotes[i + 1], newPossibleNotes[i]
+                    swapped = False
 
         return newPossibleNotes
 
@@ -207,8 +222,6 @@ class PartWriter:
                     break
 
     def writeLine(self, beat=0, voice="soprano", voices=""):
-        self.printAllVoices()
-        print()
         if voices:
             self.voices = voices
 
@@ -223,8 +236,6 @@ class PartWriter:
 
         count = 0
         while count < 4:
-            print(len(allNotes))
-            print(j)
             if allNotes[j] in [chord.root[0], chord.third[0], chord.fifth[0]]:
                 possibleNotes.append(allNotes[j:j+2])
             if allNotes[i] in [chord.root[0], chord.third[0], chord.fifth[0]]:
@@ -237,18 +248,19 @@ class PartWriter:
 
         counts = self.updateChordMemberFrequency(counts, beat, chord, voice)
         possibleNotes = self.removeBadNotes(possibleNotes, counts, voice, chord)
-        for n in possibleNotes:
-            if "" in self.voices["tenor"]:
-                if beat < len(self.chords):
-                    self.voices[voice][beat] = n
-                    if voice != "tenor":
-                        nextVoice = voicesInOrder[voicesInOrder.index(voice) + 1]
-                    else:
-                        nextVoice = "soprano"
-                        beat += 1
 
-                    if beat < len(self.chords):
-                        self.writeLine(beat, nextVoice, self.voices)
+        for n in possibleNotes:
+            if "" in self.voices["tenor"] and beat < len(self.chords):
+                self.voices[voice][beat] = n
+                
+                if voice == "tenor":
+                    beat += 1
+                    nextVoice = "soprano"
+                else:
+                    nextVoice = voicesInOrder[voicesInOrder.index(voice) + 1]
+
+                if beat < len(self.chords):
+                    self.writeLine(beat, nextVoice, self.voices)
 
     def printChords(self):
         for chord in self.chords:
@@ -334,12 +346,12 @@ class PartWriter:
         self.printAllVoices()
         print()
         print("With accidentals: ")
-        self.printAllVoicesWithAccidentals()
-        self.createSheetMusicPdf()
-        self.playMidiFile()
+        # self.printAllVoicesWithAccidentals()
+        # self.createSheetMusicPdf()
+        # self.playMidiFile()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("F#", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I6 IV vi IV vii vi V I")
+    PartWriterImpl = PartWriter("A", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I6 IV vi IV vii vi V I")
     PartWriterImpl.main()
 
 # meme cases
