@@ -293,7 +293,7 @@ class PartWriter:
             bassNotes += self.addOctaveForLilypond(i)
 
         self.fileName = RandomWords().random_word() + ".ly"
-        fout = open(self.fileName, "w")
+        fout = open("artifacts/" + self.fileName, "w")
 
         if self.key in majorKeys:
             quality = "\\major"
@@ -345,6 +345,7 @@ if __name__ == "__main__":
     PartWriterImpl.main()
     PartWriterImpl.writeBassLine()
     PartWriterImpl.writeLine()
+    PartWriterImpl.printAllVoicesWithAccidentals()
     PartWriterImpl.createSheetMusicPdf()
     PartWriterImpl.createMidiFile()
 
