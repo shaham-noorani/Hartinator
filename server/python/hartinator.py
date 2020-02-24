@@ -3,6 +3,7 @@
 
 from constants import allNotes, majorKeys, minorKeys, voicesInOrder, goodStartingNotes, ranges
 from chord import Chord
+from voice_leading import is7thResolved, isParallel5thOctave, isVoiceCrossing, isSpacingValid
 
 import os
 from random_words import RandomWords
@@ -11,12 +12,6 @@ class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
         self.key = key
         self.chords = []
-
-        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
-
-        for romanNumeral in self.chordProgression:
-            self.chords.append(Chord(romanNumeral, self.key))
-        
         sopranoLine = [""] * len(self.chords)
         altoLine = [""] * len(self.chords)
         tenorLine = [""] * len(self.chords)
@@ -24,6 +19,11 @@ class PartWriter:
 
         self.voices = {"soprano": sopranoLine, "alto": altoLine, "tenor": tenorLine, "bass": bassLine}
 
+        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
+
+        for romanNumeral in self.chordProgression:
+            self.chords.append(Chord(romanNumeral, self.key))
+        
     def printAllVoices(self):
         print("Soprano: " + str(self.voices["soprano"]))
         print("Alto:    " + str(self.voices["alto"]))
@@ -31,6 +31,12 @@ class PartWriter:
         print("Bass:    " + str(self.voices["bass"]))
 
     def printAllVoicesWithAccidentals(self):
+        print("Soprano: " + str(self.sopranoLineWithAccidentals))
+        print("Alto:    " + str(self.altoLineWithAccidentals))
+        print("Tenor:   " + str(self.tenorLineWithAccidentals))
+        print("Bass:    " + str(self.bassLineWithAccidentals))
+
+    def updateAllVoicesWithAccidentals(self):
         i = 0
         for voice in voicesInOrder:
             line = []
@@ -56,94 +62,15 @@ class PartWriter:
                 self.tenorLineWithAccidentals = line
             if i == 3:
                 self.bassLineWithAccidentals = line
-            print(voicesInOrder[i] + ": " + str(line))
             i += 1
 
-    def is7thResolved(self, voice, beat, newNoteIndex):
-        seventh = majorKeys[self.key][-1]
-        newNoteIsTonic = self.key == allNotes[newNoteIndex]
-
-        if beat == 0:
-            return True
-
-        if not newNoteIsTonic:
-            if voice == "soprano" or voice == "bass":
-                if self.voices[voice][beat-1][0:1] == seventh:
-                    return False
-
-        return True
-
-    def isParallel5thOctave(self, voice, beat, newNoteIndex): 
-        if beat == 0:
-            return False
-        
-        newNote = allNotes[newNoteIndex:newNoteIndex+1]
-        priorNotes = dict()
-
-        # define prior notes to be compared to later
-        for i in voicesInOrder:
-            priorNotes[i] = self.voices[i][beat-1][0:1]
-
-        # check stagnant motion
-        if priorNotes[voice] == newNote:
-            return False
-
-        # check against prior notes for parallel 5th/octaves
-        for i in voicesInOrder:
-            if i != voice:
-                if priorNotes[i]:
-                    if priorNotes[i] == priorNotes[voice] and newNote == self.voices[i][beat][0:1]:
-                        return True
-                    if voicesInOrder.index(i) < voicesInOrder.index(voice):
-                        if allNotes[allNotes.index(priorNotes[i][0:1]) + 6] == priorNotes[voice][0:1] and allNotes[allNotes.index(self.voices[i][beat][0:1]) + 6] == newNote[0:1]:
-                            return True 
-                    elif allNotes[allNotes.index(priorNotes[i][0:1]) + 8] == priorNotes[voice][0:1] and allNotes[allNotes.index(self.voices[i][beat][0:1]) + 8] == newNote[0:1]:
-                        return True 
-            
-        return False
-
-    def isVoiceCrossing(self, voice, beat, newNoteIndex):
-        if beat < 0:
-            return False
-        
-        noteIndexes = dict()
-
-        # define prior notes dict to be compared to later
-        for i in voicesInOrder:
-            noteIndexes[i] = allNotes.index(self.voices[i][beat])
-
-        if voice == "alto" and noteIndexes["soprano"]:
-            if newNoteIndex > noteIndexes["soprano"]:
-                return True
-
-        if voice == "tenor" and noteIndexes["alto"]:
-            if newNoteIndex > noteIndexes["alto"]:
-                return True
-
-        if voice == "tenor" and noteIndexes["bass"]:
-            if newNoteIndex < noteIndexes["bass"]:
-                return True
-
-        return False
-
-    def isSpacingValid(self, voice, beat, newNoteIndex):
-        if voice == "alto":
-            if self.voices["soprano"][beat] != "":
-                if newNoteIndex + 14 < allNotes.index(self.voices["soprano"][beat]):
-                    return False
-            if self.voices["tenor"][beat] != "":
-                if newNoteIndex > allNotes.index(self.voices["tenor"][beat]) + 14:
-                    return False
-        
-        if voice == "tenor":
-            if self.voices["alto"][beat] != "":
-                if newNoteIndex + 14 < allNotes.index(self.voices["alto"][beat]):
-                    return False
-
-        return True
-
     def followsAllVoiceLeading(self, voice, beat, newNoteIndex):
-        return self.is7thResolved(voice, beat, newNoteIndex) and not self.isParallel5thOctave(voice, beat, newNoteIndex) and not self.isVoiceCrossing(voice, beat, newNoteIndex) and self.isSpacingValid(voice, beat, newNoteIndex)
+        a = is7thResolved(voice, beat, newNoteIndex, self.key, self.voices) 
+        b = isParallel5thOctave(voice, beat, newNoteIndex, self.voices) 
+        c = isVoiceCrossing(voice, beat, newNoteIndex, self.voices) 
+        d = isSpacingValid(voice, beat, newNoteIndex, self.voices)
+
+        return a and b and c and d
 
     def removeBadNotes(self, possibleNotes, counts, voice, chord):
         newPossibleNotes = []
@@ -175,11 +102,32 @@ class PartWriter:
         while swapped:
             swapped = False
             for i in range(len(newPossibleNotes) - 1):
-                if newPossibleNotes[i] > newPossibleNotes[i + 1]:
+                ratingOfNote1 = self.rateNote(possibleNotes[i], counts, voice, chord)
+                ratingOfNote2 = self.rateNote(possibleNotes[i + 1], counts, voice, chord)
+                if ratingOfNote1 < ratingOfNote2:
                     newPossibleNotes[i], newPossibleNotes[i + 1] = newPossibleNotes[i + 1], newPossibleNotes[i]
                     swapped = False
 
         return newPossibleNotes
+
+    def rateNote(self, note, counts, voice, chord):
+        note = note[0]
+        if voice == "soprano":
+            if note == chord.root:
+                return 1
+            return 2
+        
+        if voice == "alto":
+            if note == chord.root:
+                return 1
+            if (note == chord.fifth and counts[1] != 0) or note == chord.third:
+                return 2
+            return 3
+        
+        if voice == "tenor":
+            if note == chord.root and not 0 in [counts[1], counts[2]]:
+                return 1
+            return 2
 
     def updateChordMemberFrequency(self, counts, beat, chord, voice):
         newCounts = [0, 0, 0]
@@ -248,6 +196,7 @@ class PartWriter:
 
         counts = self.updateChordMemberFrequency(counts, beat, chord, voice)
         possibleNotes = self.removeBadNotes(possibleNotes, counts, voice, chord)
+        possibleNotes = self.reorderPossibleNotes(possibleNotes, counts, voice, chord)
 
         for n in possibleNotes:
             if "" in self.voices["tenor"] and beat < len(self.chords):
@@ -266,7 +215,7 @@ class PartWriter:
         for chord in self.chords:
             print(chord.root + " " + chord.third + " " + chord.fifth)
 
-    def addOctaveForLilypond(self, note):
+    def addOctaveAndAccidentalsForLilypond(self, note):
         result = note[0]
         if "#" in note:
             result += "is"
@@ -284,13 +233,13 @@ class PartWriter:
         sopranoNotes, altoNotes, tenorNotes, bassNotes = "", "", "", ""
 
         for i in self.sopranoLineWithAccidentals:
-            sopranoNotes += self.addOctaveForLilypond(i)
+            sopranoNotes += self.addOctaveAndAccidentalsForLilypond(i)
         for i in self.altoLineWithAccidentals:
-            altoNotes += self.addOctaveForLilypond(i)
+            altoNotes += self.addOctaveAndAccidentalsForLilypond(i)
         for i in self.tenorLineWithAccidentals:
-            tenorNotes += self.addOctaveForLilypond(i)
+            tenorNotes += self.addOctaveAndAccidentalsForLilypond(i)
         for i in self.bassLineWithAccidentals:
-            bassNotes += self.addOctaveForLilypond(i)
+            bassNotes += self.addOctaveAndAccidentalsForLilypond(i)
 
         self.fileName = RandomWords().random_word() + ".ly"
         fout = open("artifacts/" + self.fileName, "w")
@@ -330,24 +279,20 @@ class PartWriter:
         fout.write(newFileString)
         fout.close()
         os.system("lilypond --include /artifacts -o /artifacts " + self.fileName)
-        
-    def playMidiFile(self):
-        os.system("open -a GarageBand artifacts/" + self.fileName[0:-3] + ".midi")
 
     def main(self):
-        if self.key == None:
-            self.key = input("What is the key?: ")
-        if self.chordProgression == None:
-            self.chordProgression = input("Enter a chord progression (seperated by spaces): ").split(" ")
+        self.writeBassLine()
+        self.writeLine()
+        self.updateAllVoicesWithAccidentals()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("A", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I6 IV vi IV vii vi V I")
+    PartWriterImpl = PartWriter("A", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I")
     PartWriterImpl.main()
-    PartWriterImpl.writeBassLine()
-    PartWriterImpl.writeLine()
+    PartWriterImpl.printAllVoices()
+    print()
     PartWriterImpl.printAllVoicesWithAccidentals()
     PartWriterImpl.createSheetMusicPdf()
     PartWriterImpl.createMidiFile()
 
 # meme cases
-#I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I-
+#I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I
