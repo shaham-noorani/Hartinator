@@ -12,17 +12,18 @@ class PartWriter:
     def __init__(self, key="C", chordProgression="I"):
         self.key = key
         self.chords = []
+
+        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
+
+        for romanNumeral in self.chordProgression:
+            self.chords.append(Chord(romanNumeral, self.key))
+
         sopranoLine = [""] * len(self.chords)
         altoLine = [""] * len(self.chords)
         tenorLine = [""] * len(self.chords)
         bassLine = [""] * len(self.chords)
 
         self.voices = {"soprano": sopranoLine, "alto": altoLine, "tenor": tenorLine, "bass": bassLine}
-
-        self.chordProgression = chordProgression.split(" ") # convert from "I I I" to ["I", "I", "I"]
-
-        for romanNumeral in self.chordProgression:
-            self.chords.append(Chord(romanNumeral, self.key))
         
     def printAllVoices(self):
         print("Soprano: " + str(self.voices["soprano"]))
@@ -65,11 +66,13 @@ class PartWriter:
             i += 1
 
     def followsAllVoiceLeading(self, voice, beat, newNoteIndex):
+        print("beat in voice leading: " + str(beat))
         a = is7thResolved(voice, beat, newNoteIndex, self.key, self.voices) 
-        b = isParallel5thOctave(voice, beat, newNoteIndex, self.voices) 
+        b = isParallel5thOctave(voice, beat, newNoteIndex, self.voices)
         c = isVoiceCrossing(voice, beat, newNoteIndex, self.voices) 
         d = isSpacingValid(voice, beat, newNoteIndex, self.voices)
 
+        print(str(a) + " " + str(b) + " " + str(c) + " " + str(d))
         return a and b and c and d
 
     def removeBadNotes(self, possibleNotes, counts, voice, chord):
@@ -291,8 +294,6 @@ if __name__ == "__main__":
     PartWriterImpl.printAllVoices()
     print()
     PartWriterImpl.printAllVoicesWithAccidentals()
-    PartWriterImpl.createSheetMusicPdf()
-    PartWriterImpl.createMidiFile()
 
 # meme cases
 #I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I

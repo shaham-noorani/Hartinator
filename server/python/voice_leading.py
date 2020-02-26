@@ -33,7 +33,7 @@ def isParallel5thOctave(voice, beat, newNoteIndex, voices):
     for i in voicesInOrder:
         if i != voice:
             if priorNotes[i]:
-                if priorNotes[i] == priorNotes[voice] and newNote == voices[i][beat][0:1]:
+                if priorNotes[i] == priorNotes[voice] and newNote == voices[i][0:1]:
                     return True
                 if voicesInOrder.index(i) < voicesInOrder.index(voice):
                     if allNotes[allNotes.index(priorNotes[i][0:1]) + 6] == priorNotes[voice][0:1] and allNotes[allNotes.index(voices[i][beat][0:1]) + 6] == newNote[0:1]:
@@ -44,14 +44,15 @@ def isParallel5thOctave(voice, beat, newNoteIndex, voices):
     return False
 
 def isVoiceCrossing(voice, beat, newNoteIndex, voices):
-    if beat < 0:
+    if beat == 0:
         return False
     
-    noteIndexes = dict()
+    noteIndexes = {"soprano": "", "alto": "", "tenor": "", "bass": ""}
 
     # define prior notes dict to be compared to later
     for i in voicesInOrder:
-        noteIndexes[i] = allNotes.index(voices[i][beat])
+        if i != voice:
+            noteIndexes[i] = allNotes.index(voices[i][beat])
 
     if voice == "alto" and noteIndexes["soprano"]:
         if newNoteIndex > noteIndexes["soprano"]:

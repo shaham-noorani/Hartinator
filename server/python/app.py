@@ -5,7 +5,6 @@ from hartinator import PartWriter
 # configuration
 DEBUG = True
 VOICES = ["lmao"]
-PDFS = ["lmao"]
 
 # instantiate the app
 app = Flask(__name__)
@@ -26,17 +25,13 @@ def respondWithNotes():
     if request.method == 'POST':
         post_data = request.get_json()
         progression = post_data.get('progression')
-        PartWriterImpl = PartWriter(post_data.get('key'), progression)
+        key = post_data.get('key')
+        PartWriterImpl = PartWriter(key, progression)
         PartWriterImpl.writeBassLine()
         PartWriterImpl.writeLine()
-        PartWriterImpl.printAllVoicesWithAccidentals()
-        PartWriterImpl.createSheetMusicPdf()
-        PartWriterImpl.createMidiFile()
         VOICES.append(PartWriterImpl.voices)
-        PDFS.append(PartWriterImpl.fileName[0:-3] + ".pdf")
     else:
         response_object['voices'] = VOICES[-1]
-        response_object['pdf'] = PDFS[-1]
     return jsonify(response_object)
 
 if __name__ == '__main__':

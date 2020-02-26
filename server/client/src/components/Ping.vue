@@ -19,7 +19,6 @@
     <p>Tenor: {{ voices["tenor"] }}</p>
     <p>Bass: {{ voices["bass"] }}</p>
   </form>
-  <!-- <pdf src="../../python/artifacts/cave.pdf" ></pdf> -->
   </div>
 </template>
 
@@ -40,7 +39,6 @@ export default {
       },
       key: '',
       progression: '',
-      pdf: '',
     };
   },
   methods: {
@@ -52,17 +50,6 @@ export default {
           this.voices["alto"] = res.data.voices["alto"]
           this.voices["tenor"] = res.data.voices["tenor"]
           this.voices["bass"] = res.data.voices["bass"]
-        })
-        .catch((error) => {
-        console.error(error);
-        });
-    },
-    getPDF ()
-    {
-      const notesPath = 'http://localhost:5000/notes';
-      axios.get(notesPath)
-        .then((res) => {
-          this.pdf = "../../python/artifacts/" + res.data.pdf
         })
         .catch((error) => {
         console.error(error);
@@ -81,7 +68,6 @@ export default {
   },
   created() {
     this.getNotes();
-    this.getPDF();
   },
 };
 </script>
