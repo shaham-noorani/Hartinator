@@ -289,7 +289,7 @@ class PartWriter:
         self.updateAllVoicesWithAccidentals()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("A", "I IV vi V6 I IV V V6 ii IV V vii vi IV ii V I")
+    PartWriterImpl = PartWriter("C", "I V I")
     PartWriterImpl.main()
     PartWriterImpl.printAllVoices()
     print()

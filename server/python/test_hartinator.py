@@ -3,6 +3,7 @@ import unittest
 from hartinator import PartWriter
 from constants import allNotes
 from voice_leading import is7thResolved, isParallel5thOctave, isSpacingValid, isVoiceCrossing
+from chord import Chord
 
 class TestPartWriter(unittest.TestCase):
     def testVoiceCrossing(self):
@@ -43,17 +44,17 @@ class TestPartWriter(unittest.TestCase):
         self.assertFalse(isSpacingValid("alto", 0, allNotes.index("B3"), testObject.voices))
         self.assertTrue(isSpacingValid("tenor", 0, allNotes.index("G3"), testObject.voices))
 
-    # def testFollowsVoiceLeading(self):
-    #     testObject = PartWriter("A", "I")
-    #     testObject.voices["soprano"] = ['C5', 'C5', 'D5', 'D5', 'E5', 'D5', 'A4', 'B4']
-    #     testObject.voices["alto"] = ['E4', 'F4', 'F4', 'F4', 'G4', 'G4', 'E4', 'E4']
-    #     testObject.voices["tenor"] = ['A3', 'A3', 'A3', 'B3', 'B3', 'B3', 'C4', '']
-    #     testObject.voices["bass"] = ['A2', 'F2', 'D3', 'B2', 'E3', 'G3', 'A3', 'E3']
-    #     testObject.printAllVoices()
-    #     beat = 7
-    #     self.assertTrue(testObject.followsAllVoiceLeading("tenor", beat, allNotes.index("G3")))
-    #     print("new beat " + str(beat))
-
+    def testRemoveBadNotes(self):
+        testObject = PartWriter("C", "I V I")
+        testObject.voices["soprano"] = ["C5", "D5", "C5"]
+        testObject.voices["alto"] = ["E4", "C4", "E4"]
+        testObject.voices["tenor"] = ["G3", "B3"]
+        testObject.voices["bass"] = ["C3", "G2", "C3"]
+        possibleNotes = ["G3", "C4", "E4"]
+        counts = [2, 1, 0]
+        chord = Chord("I", "C")
+        newPossibleNotes = testObject.removeBadNotes(possibleNotes, counts, "tenor", chord)
+        self.assertEqual(newPossibleNotes, ["G3"])
 
 if __name__ == '__main__':
     unittest.main()
