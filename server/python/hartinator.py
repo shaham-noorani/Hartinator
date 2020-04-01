@@ -294,6 +294,7 @@ if __name__ == "__main__":
     PartWriterImpl.printAllVoices()
     print()
     PartWriterImpl.printAllVoicesWithAccidentals()
+    PartWriterImpl.createSheetMusicPdf()
 
 # meme cases
 #I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I
