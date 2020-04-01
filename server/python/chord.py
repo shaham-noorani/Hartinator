@@ -36,14 +36,11 @@ class Chord:
                 self.fifth = minorKeys[key][chordAsScaleDegree-1 + 4]
         if "64" in romanNumeral:
             oldRoot = self.root
-            oldThird = self.third
             self.root = self.fifth
+            self.fifth = self.third
             self.third = oldRoot
-            self.fifth = oldThird
         elif "6" in romanNumeral:
             oldRoot = self.root
-            oldThird = self.third
-            oldFifth = self.fifth
-            self.root = oldThird
-            self.third = oldFifth
+            self.root = self.third
+            self.third = self.fifth
             self.fifth = oldRoot
