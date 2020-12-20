@@ -245,7 +245,7 @@ class PartWriter:
             bassNotes += self.addOctaveAndAccidentalsForLilypond(i)
 
         self.fileName = RandomWords().random_word() + ".ly"
-        fout = open("artifacts/" + self.fileName, "w")
+        fout = open(self.fileName, "w")
 
         if self.key in majorKeys:
             quality = "\\major"
@@ -273,15 +273,15 @@ class PartWriter:
         fout.write(fileString)
         fout.close()
 
-        os.system("lilypond --include /artifacts -o /artifacts " + self.fileName)
+        os.system("lilypond " + self.fileName)
         print("Look for a file named \'" + self.fileName[0:-3] + ".pdf" + "\'!")
 
     def createMidiFile(self):
-        fout = open("artifacts/" + self.fileName[0:-3] + ".midi", "w")
+        fout = open(self.fileName, "w")
         newFileString = self.fileString[0:self.fileString.index("score") + 8] + "\\midi { \\tempo 4 = 72 } " + self.fileString[self.fileString.index("score") + 8:-1] + self.fileString[-1]
         fout.write(newFileString)
         fout.close()
-        os.system("lilypond --include /artifacts -o /artifacts " + self.fileName)
+        os.system("lilypond " + self.fileName)
 
     def main(self):
         self.writeBassLine()
@@ -289,12 +289,14 @@ class PartWriter:
         self.updateAllVoicesWithAccidentals()
 
 if __name__ == "__main__":
-    PartWriterImpl = PartWriter("C", "I V I")
+    PartWriterImpl = PartWriter(
+        "C", "I IV V I")
     PartWriterImpl.main()
     PartWriterImpl.printAllVoices()
     print()
     PartWriterImpl.printAllVoicesWithAccidentals()
     PartWriterImpl.createSheetMusicPdf()
+    PartWriterImpl.createMidiFile()
 
 # meme cases
 #I IV vi V I IV V I ii IV V vii vi IV ii V I IV vi IV vii vi V I
